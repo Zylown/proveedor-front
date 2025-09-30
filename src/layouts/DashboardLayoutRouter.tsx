@@ -11,7 +11,7 @@ export default function DashboardLayoutRouter() {
     <main className="flex h-screen">
       {/* Sidebar fijo */}
       <aside
-        className={`bg-gray-100 border-r transition-all duration-300 ${
+        className={`bg-gray-100 border-r border-gristransparente transition-all duration-300 ${
           sidebarOpen ? "w-64" : "w-16"
         }`}
       >
