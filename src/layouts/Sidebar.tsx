@@ -24,7 +24,7 @@ export default function Sidebar({ isOpen }: SidebarProps) {
     {
       title: "Registro de Proveedores",
       icon: AiOutlineFileAdd,
-      link: "/#",
+      link: "/proveedores",
     },
     {
       title: "Órdenes de compra",
