@@ -13,7 +13,7 @@ export default function Proveedores() {
   };
   return (
     <section>
-      <div className="top flex items-center justify-between mb-8">
+      <div className="top flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
         <div>
           <h2 className="text-3xl font-bold">Registro de Proveedores</h2>
           <p className="text-grisoscuro">
@@ -27,7 +27,7 @@ export default function Proveedores() {
           </button>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <Card
           title="Información del Proveedor"
           subtitle="Completa los datos básicos del proveedor"
@@ -36,7 +36,7 @@ export default function Proveedores() {
             onSubmit={handleSubmit(onSubmit)}
             className="mt-4 flex flex-col gap-4"
           >
-            <div className="grid grid-cols-2 gap-4 w-full">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
               <div className="form_izq w-full">
                 <label className="block">Nombre Comercial</label>
                 <input
@@ -70,7 +70,7 @@ export default function Proveedores() {
                 {...register("direccion")}
               />
             </div>
-            <div className="grid grid-cols-2 gap-4 w-full">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
               <div className="form_izq w-full">
                 <label className="block">Teléfono</label>
                 <input
@@ -123,59 +123,43 @@ export default function Proveedores() {
           subtitle="Lista de proveedores activos en el sistema"
         >
           <div className="mt-4 grid grid-cols-1 gap-4 max-h-96">
-            {/* Tarjeta de proveedor */}
-            <div className="flex items-center justify-between bg-gray-100/60 p-4 rounded-lg shadow">
-              {/* Icono izquierda */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-gray-100/60 p-4 rounded-lg shadow">
               <div className="flex-shrink-0 text-gray-400 text-3xl mr-4">
                 <LuBuilding />
               </div>
-
-              {/* Centro: Nombre y RUC */}
-              <div className="flex flex-col items-start text-center flex-grow">
+              <div className="flex flex-col items-start flex-grow">
                 <p className="font-semibold">Suministros Industriales SA</p>
                 <p className="text-sm text-gray-500">RUC: 12345678901</p>
               </div>
-
-              {/* Derecha: Info */}
-              <div className="flex flex-col items-end text-sm">
+              <div className="flex flex-col items-start sm:items-end text-sm mt-2 sm:mt-0">
                 <p>Insumos</p>
                 <p className="text-blue-600 font-medium">Activo</p>
               </div>
             </div>
 
-            {/* Puedes duplicar y cambiar los datos para más proveedores */}
-            <div className="flex items-center justify-between bg-gray-100/60 p-4 rounded-lg shadow">
-              {/* Icono izquierda */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-gray-100/60 p-4 rounded-lg shadow">
               <div className="flex-shrink-0 text-gray-400 text-3xl mr-4">
                 <LuBuilding />
               </div>
-
-              {/* Centro: Nombre y RUC */}
-              <div className="flex flex-col items-start text-center flex-grow">
+              <div className="flex flex-col items-start flex-grow">
                 <p className="font-semibold">Logística Express</p>
                 <p className="text-sm text-gray-500">RUC: 20987654321</p>
               </div>
-
-              {/* Derecha: Info */}
-              <div className="flex flex-col items-end text-sm">
+              <div className="flex flex-col items-start sm:items-end text-sm mt-2 sm:mt-0">
                 <p className="text-blue-600 font-medium">Servicios</p>
                 <p className="text-blue-600 font-medium">Activo</p>
               </div>
             </div>
-            <div className="flex items-center justify-between bg-gray-100/60 p-4 rounded-lg shadow">
-              {/* Icono izquierda */}
+
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-gray-100/60 p-4 rounded-lg shadow">
               <div className="flex-shrink-0 text-gray-400 text-3xl mr-4">
                 <LuBuilding />
               </div>
-
-              {/* Centro: Nombre y RUC */}
-              <div className="flex flex-col items-start text-center flex-grow">
+              <div className="flex flex-col items-start flex-grow">
                 <p className="font-semibold">Materiales Premium</p>
                 <p className="text-sm text-gray-500">RUC: 20456789123</p>
               </div>
-
-              {/* Derecha: Info */}
-              <div className="flex flex-col items-end text-sm">
+              <div className="flex flex-col items-start sm:items-end text-sm mt-2 sm:mt-0">
                 <p>Insumos</p>
                 <p className="text-blue-600 font-medium">Activo</p>
               </div>

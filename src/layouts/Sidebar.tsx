@@ -29,17 +29,17 @@ export default function Sidebar({ isOpen }: SidebarProps) {
     {
       title: "Órdenes de compra",
       icon: AiOutlineShoppingCart,
-      link: "/#",
+      link: "/order",
     },
     {
       title: "Seguimiento de Entregas",
       icon: AiOutlineTruck,
-      link: "/#",
+      link: "/entregas",
     },
     {
       title: "Facturación y Pagos",
       icon: AiOutlineDollarCircle,
-      link: "/#",
+      link: "/facturacion",
     },
     {
       title: "Evaluación de Proveedores",

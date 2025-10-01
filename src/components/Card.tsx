@@ -18,8 +18,9 @@ export default function Card({
   className = "",
 }: CardProps) {
   return (
-    // classname en caso de que quiera pasar clases adicionales
-    <div className={`bg-white rounded-xl shadow p-5 border border-gristransparente ${className}`}>
+    <div
+      className={`w-full bg-white rounded-xl shadow p-5 border border-gristransparente ${className}`}
+    >
       <div className="flex justify-between items-start">
         <div>
           {title && (
@@ -27,7 +28,7 @@ export default function Card({
           )}
           {subtitle && <p className="text-gray-500 text-xs">{subtitle}</p>}
         </div>
-        {icon && <div className="text-gray-400">{icon}</div>}
+        {icon && <div className="text-gray-400 text-xl">{icon}</div>}
       </div>
 
       {value && (
