@@ -10,12 +10,11 @@ import Card from "../components/Card";
 
 export default function DashboardLayout() {
   return (
-    <div className="flex flex-col gap-6">
-      <header className="grid grid-cols-4 gap-6">
+    <div className="flex flex-col gap-6 p-4">
+      <header className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card
           title="Total Proveedores"
           value="247"
-          // subtitle="+12% desde el mes pasado"
           icon={<LuBuilding />}
           footer="+12% desde el mes pasado"
         />
@@ -23,14 +22,12 @@ export default function DashboardLayout() {
         <Card
           title="Órdenes Activas"
           value="89"
-          // subtitle="+5 nuevas hoy"
           icon={<AiOutlineShoppingCart />}
           footer="+5 nuevas hoy"
         />
         <Card
           title="Entregas Pendientes"
           value="34"
-          // subtitle="3 con retraso"
           icon={<AiOutlineTruck />}
           footer="3 con retraso"
         />
@@ -38,21 +35,19 @@ export default function DashboardLayout() {
         <Card
           title="Pagos Pendientes"
           value="$45,231"
-          // subtitle="7 facturas vencidas"
           icon={<AiOutlineWarning />}
           footer="7 facturas vencidas"
         />
       </header>
-      <section className="grid grid-cols-2 gap-6">
+
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card
           title="Actividad Reciente"
           subtitle="Últimas notificaciones y actualizaciones"
         >
           <ul className="space-y-4">
             <li className="flex items-center gap-2">
-              <div>
-                <AiOutlineCheckCircle className="inline mr-2 text-green-500 text-lg" />
-              </div>
+              <AiOutlineCheckCircle className="text-green-500 text-lg" />
               <div>
                 <p className="text-gray-700">Orden #1234 completada</p>
                 <p className="text-gray-500 text-xs">
@@ -61,20 +56,16 @@ export default function DashboardLayout() {
               </div>
             </li>
             <li className="flex items-center gap-2">
-              <div>
-                <AiOutlineClockCircle className="inline mr-2 text-yellow-500 text-lg" />
-              </div>
+              <AiOutlineClockCircle className="text-yellow-500 text-lg" />
               <div>
                 <p className="text-gray-700">Entrega retrasada</p>
                 <p className="text-gray-500 text-xs">
                   Orden #1235 - Estimado: mañana
                 </p>
               </div>
-            </li>{" "}
+            </li>
             <li className="flex items-center gap-2">
-              <div>
-                <LuBuilding className="inline mr-2 text-blue-500 text-lg" />
-              </div>
+              <LuBuilding className="text-blue-500 text-lg" />
               <div>
                 <p className="text-gray-700">Nuevo proveedor registrado</p>
                 <p className="text-gray-500 text-xs">
@@ -84,6 +75,7 @@ export default function DashboardLayout() {
             </li>
           </ul>
         </Card>
+
         <Card
           title="Proveedores Destacados"
           subtitle="Mejor desempeño este mes"
@@ -110,7 +102,7 @@ export default function DashboardLayout() {
                   100% calidad
                 </p>
               </div>
-            </li>{" "}
+            </li>
             <li className="flex justify-between items-center">
               <div>
                 <p className="font-semibold">Logística Express</p>
@@ -125,30 +117,29 @@ export default function DashboardLayout() {
           </ul>
         </Card>
       </section>
+
       <section>
-        <div>
-          <Card title="Acciones Rápidas" subtitle="Tareas comunes del sistema">
-            <div className="flex flex-wrap gap-4 mt-4">
-              <button className="bg-azulbrillante text-white px-4 py-2 font-semibold rounded-lg hover:bg-blue-600 transition">
-                Registrar Nuevo Proveedor
-              </button>
-              <button className="text-blue-400 border border-blue-300 px-4 py-2 rounded-lg hover:bg-sky-100 hover:text-blue-900 transition">
-                Crear Orden de Compra
-              </button>
-              <button className="text-green-400 border border-green-300 px-4 py-2 rounded-lg hover:bg-green-100 hover:text-blue-900 transition">
-                Generar Reporte
-              </button>
-              <button className="text-orange-400 border border-orange-300 px-4 py-2 rounded-lg hover:bg-orange-100 hover:text-blue-900 transition">
-                Revisar Facturas Pendientes
-              </button>
-            </div>
-          </Card>
-        </div>
+        <Card title="Acciones Rápidas" subtitle="Tareas comunes del sistema">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-4 mt-4">
+            <button className="bg-azulbrillante text-white px-4 py-2 font-semibold rounded-lg hover:bg-blue-600 transition">
+              Registrar Nuevo Proveedor
+            </button>
+            <button className="text-blue-400 border border-blue-300 px-4 py-2 rounded-lg hover:bg-sky-100 hover:text-blue-900 transition">
+              Crear Orden de Compra
+            </button>
+            <button className="text-green-400 border border-green-300 px-4 py-2 rounded-lg hover:bg-green-100 hover:text-blue-900 transition">
+              Generar Reporte
+            </button>
+            <button className="text-orange-400 border border-orange-300 px-4 py-2 rounded-lg hover:bg-orange-100 hover:text-blue-900 transition">
+              Revisar Facturas Pendientes
+            </button>
+          </div>
+        </Card>
       </section>
+
       <section>
         <Card title="Análisis de Órdenes de Compra">
-          <div className="h-64 flex items-center justify-center text-gray-400">
-            {/* Aquí iría un gráfico real */}
+          <div className="h-64 flex items-center justify-center text-gray-400 text-sm sm:text-base">
             [Gráfico de Órdenes de Compra - Placeholder]
           </div>
         </Card>
