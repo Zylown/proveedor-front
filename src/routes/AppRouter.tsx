@@ -7,8 +7,8 @@ import {
 import Dashboard from "../pages/Dashboard";
 import Login from "../pages/Login";
 import Proveedores from "../pages/Proveedores";
-import Order from "../pages/order";
-import Facturacion from "../pages/facturacion";
+import Order from "../pages/Order";
+import Facturacion from "../pages/Facturacion";
 import Entregas from "../pages/Entregas";
 import DashboardLayoutRouter from "../layouts/DashboardLayoutRouter";
 
