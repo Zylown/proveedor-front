@@ -50,7 +50,7 @@ export default function Sidebar({ isOpen }: SidebarProps) {
 
   return (
     <div className="h-screen flex flex-col">
-      <div className="logo flex items-center gap-2 px-4 py-[8.6px] border-b border-gristransparente">
+      <div className="logo flex items-center gap-2 px-4 py-[12.5px] border-b border-gristransparente">
         <AiOutlineTeam className="text-3xl" />
         {isOpen && <h2 className="text-lg font-semibold">SupplierPro</h2>}
       </div>

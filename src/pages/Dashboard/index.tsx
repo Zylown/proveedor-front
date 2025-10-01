@@ -33,7 +33,7 @@ export default function Dashboard() {
 
         {/* Contenido con scroll */}
       {/* </div> */}
-        <section className="flex-1 p-6">
+        <section className="flex-1">
           <DashboardLayout />
         </section>
     </main>
