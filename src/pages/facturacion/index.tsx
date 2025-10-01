@@ -32,7 +32,7 @@ type Factura = {
   notas: string;
 };
 
-export default function FacturacionPagos() {
+export default function Facturacion() {
   const { register, handleSubmit } = useForm<Factura>();
 
   const onSubmit = (data: Factura) => {

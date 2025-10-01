@@ -11,7 +11,7 @@ type OrdenCompra = {
   descripcion: string;
 };
 
-export default function OrdenesCompra() {
+export default function Order() {
   const { register, handleSubmit } = useForm<OrdenCompra>();
 
   const onSubmit = (data: OrdenCompra) => {
