@@ -9,8 +9,8 @@ import Login from "../pages/Login";
 import Proveedores from "../pages/Proveedores";
 import Entregas from "../pages/Entregas";
 import DashboardLayoutRouter from "../layouts/DashboardLayoutRouter";
-import Order from "../pages/order";
-import Facturacion from "../pages/facturacion";
+import Order from "../pages/Order";
+import Facturacion from "../pages/Facturacion";
 
 const AppRouter = () => {
   return (
