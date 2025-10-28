@@ -111,63 +111,59 @@ export default function DashboardLayout() {
     <div className="flex flex-col gap-6 p-4">
       <header className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card
-  title="Total Proveedores"
-  value="247"
-  icon={<LuBuilding />}
-  footer="+12% desde el mes pasado"
-  color="#1E90FF" // azul
-/>
+          title="Total Proveedores"
+          value="247"
+          icon={<LuBuilding />}
+          footer="+12% desde el mes pasado"
+        />
 
-<Card
-  title="Órdenes Activas"
-  //@ts-ignore
-  value={loading ? <SmallSpinner /> : data?.ordenes_activas || "0"}
-  icon={<AiOutlineShoppingCart />}
-  //@ts-ignore
-  footer={
-    loading ? (
-      <span className="text-gray-400 text-sm">Cargando...</span>
-    ) : (
-      `${data?.nuevas_hoy || "0"} nuevas hoy`
-    )
-  }
-  color="#4CAF50" // verde
-/>
+        <Card
+          title="Órdenes Activas"
+          
+          //@ts-ignore
+          value={loading ? <SmallSpinner /> : data?.ordenes_activas || "0"}
+          icon={<AiOutlineShoppingCart />}
+          //@ts-ignore
+          footer={
+            loading ? (
+              <span className="text-gray-400 text-sm">Cargando...</span>
+            ) : (
+              `${data?.nuevas_hoy || "0"} nuevas hoy`
+            )
+          }
+        />
 
-<Card
-  title="Entregas Pendientes"
-  //@ts-ignore
-  value={loading ? <SmallSpinner /> : data?.entregas_pendientes || "0"}
-  icon={<AiOutlineTruck />}
-  //@ts-ignore
-  footer={
-    loading ? (
-      <span className="text-gray-400 text-sm">Cargando...</span>
-    ) : (
-      `${data?.retrasadas || "0"} con retraso`
-    )
-  }
-  color="#FFA500" // naranja
-/>
+        <Card
+          title="Entregas Pendientes"
+          //@ts-ignore
+          value={loading ? <SmallSpinner /> : data?.entregas_pendientes || "0"}
+          icon={<AiOutlineTruck />}
+          //@ts-ignore
+          footer={
+            loading ? (
+              <span className="text-gray-400 text-sm">Cargando...</span>
+            ) : (
+              `${data?.retrasadas || "0"} con retraso`
+            )
+          }
+        />
 
-<Card
-  title="Pagos Pendientes"
-  //@ts-ignore
-  value={
-    loading ? <SmallSpinner /> : `$${data?.pagos_pendientes || "0.00"}`
-  }
-  icon={<AiOutlineWarning />}
-  //@ts-ignore
-  footer={
-    loading ? (
-      <span className="text-gray-400 text-sm">Cargando...</span>
-    ) : (
-      `${data?.facturas_vencidas || "0"} facturas vencidas`
-    )
-  }
-  color="#E53935" // rojo
-/>
-
+        <Card
+          title="Pagos Pendientes"
+          //@ts-ignore
+          value={
+            loading ? <SmallSpinner /> : `$${data?.pagos_pendientes || "0.00"}`
+          }
+          icon={<AiOutlineWarning />}
+          //@ts-ignore
+          footer={
+            loading ? (
+              <span className="text-gray-400 text-sm">Cargando...</span>
+            ) : (
+              `${data?.facturas_vencidas || "0"} facturas vencidas`
+            )
+          }
+        />
       </header>
 
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
