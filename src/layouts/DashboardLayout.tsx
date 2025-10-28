@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { LuBuilding } from "react-icons/lu";
 import {
   AiOutlineShoppingCart,
@@ -9,6 +10,38 @@ import {
 import Card from "../components/Card";
 
 export default function DashboardLayout() {
+    const [data, setData] = useState<{
+    ordenes_activas?: number;
+    nuevas_hoy?: number;
+    entregas_pendientes?: number;
+    retrasadas?: number;
+    pagos_pendientes?: number;
+    facturas_vencidas?: number;
+  } | null>(null);
+
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function init() {
+      try {
+        const res = await fetch("https://proveedor-back-a1051c0b9289.herokuapp.com/dashboard/kpis");
+        const json = await res.json();
+        setData(json);
+      } catch (err) {
+        console.error("Error :", (err as Error).message);
+      } finally {
+        setLoading(false);
+      }
+    }
+    init();
+  }, []);
+
+  const SmallSpinner = () => (
+    <div className="flex justify-center">
+      <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  );
+
   return (
     <div className="flex flex-col gap-6 p-4">
       <header className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -21,22 +54,53 @@ export default function DashboardLayout() {
 
         <Card
           title="Órdenes Activas"
-          value="89"
+          //@ts-ignore
+          value={loading ? <SmallSpinner /> : data?.ordenes_activas || "0"}
           icon={<AiOutlineShoppingCart />}
-          footer="+5 nuevas hoy"
+          //@ts-ignore
+          footer={
+            loading ? (
+              <span className="text-gray-400 text-sm">Cargando...</span>
+            ) : (
+              `${data?.nuevas_hoy || "0"} nuevas hoy`
+            )
+          }
         />
+
         <Card
           title="Entregas Pendientes"
-          value="34"
+          //@ts-ignore
+          value={loading ? <SmallSpinner /> : data?.entregas_pendientes || "0"}
           icon={<AiOutlineTruck />}
-          footer="3 con retraso"
+          //@ts-ignore
+          footer={
+            loading ? (
+              <span className="text-gray-400 text-sm">Cargando...</span>
+            ) : (
+              `${data?.retrasadas || "0"} con retraso`
+            )
+          }
         />
 
         <Card
           title="Pagos Pendientes"
-          value="$45,231"
+          //@ts-ignore
+          value={
+            loading ? (
+              <SmallSpinner />
+            ) : (
+              `$${data?.pagos_pendientes || "0.00"}`
+            )
+          }
           icon={<AiOutlineWarning />}
-          footer="7 facturas vencidas"
+          //@ts-ignore
+          footer={
+            loading ? (
+              <span className="text-gray-400 text-sm">Cargando...</span>
+            ) : (
+              `${data?.facturas_vencidas || "0"} facturas vencidas`
+            )
+          }
         />
       </header>
 
