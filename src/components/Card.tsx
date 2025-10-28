@@ -6,6 +6,7 @@ interface CardProps {
   icon?: React.ReactNode;
   children?: React.ReactNode;
   className?: string;
+  color?: string;
 }
 
 export default function Card({
@@ -16,28 +17,54 @@ export default function Card({
   icon,
   children,
   className = "",
+  color,
 }: CardProps) {
+  const customColor = color || "#6b7280";
   return (
     <div
-      className={`w-full bg-white rounded-xl shadow p-5 border border-gristransparente ${className}`}
+      className={`w-full bg-white rounded-xl shadow p-5 border ${className}`}
+      style={{
+        borderColor: customColor,
+        color: customColor,
+      }}
     >
       <div className="flex justify-between items-start">
         <div>
           {title && (
-            <h3 className="text-gray-700 text-sm font-semibold">{title}</h3>
+            <h3 className="text-sm font-semibold" style={{ color: customColor }}>
+              {title}
+            </h3>
           )}
-          {subtitle && <p className="text-gray-500 text-xs">{subtitle}</p>}
+          {subtitle && (
+            <p className="text-xs opacity-80" style={{ color: customColor }}>
+              {subtitle}
+            </p>
+          )}
         </div>
-        {icon && <div className="text-gray-400 text-xl">{icon}</div>}
+        {icon && (
+          <div className="text-xl" style={{ color: customColor }}>
+            {icon}
+          </div>
+        )}
       </div>
 
       {value && (
-        <div className="mt-4 text-2xl font-bold text-gray-800">{value}</div>
+        <div className="mt-4 text-2xl font-bold" style={{ color: customColor }}>
+          {value}
+        </div>
       )}
 
-      {children && <div className="mt-4 text-sm text-gray-600">{children}</div>}
+      {children && (
+        <div className="mt-4 text-sm opacity-80" style={{ color: customColor }}>
+          {children}
+        </div>
+      )}
 
-      {footer && <div className="mt-4 text-xs text-gray-400">{footer}</div>}
+      {footer && (
+        <div className="mt-4 text-xs opacity-60" style={{ color: customColor }}>
+          {footer}
+        </div>
+      )}
     </div>
   );
 }
