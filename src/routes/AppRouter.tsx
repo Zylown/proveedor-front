@@ -19,7 +19,7 @@ const AppRouter = () => {
         {/* Login no tiene sidebar */}
         <Route path="/login" element={<Login />} />
         {/* Layout del dashboard */}
-        // Ruta padre
+        {/* Ruta padre */}
         <Route path="/" element={<DashboardLayoutRouter />}>
           {/* Rutas hijas */}
           <Route index element={<Dashboard />} />
