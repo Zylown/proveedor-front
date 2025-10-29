@@ -44,7 +44,7 @@ export default function Sidebar({ isOpen }: SidebarProps) {
     {
       title: "Evaluación de Proveedores",
       icon: AiOutlineAppstoreAdd,
-      link: "/#",
+      link: "/evaluacion",
     },
   ];
 

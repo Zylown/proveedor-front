@@ -20,6 +20,7 @@ import Card from "../components/Card";
 
 export default function DashboardLayout() {
   const [data, setData] = useState<{
+    total_proveedores?: number;
     ordenes_activas?: number;
     nuevas_hoy?: number;
     entregas_pendientes?: number;
@@ -49,6 +50,7 @@ export default function DashboardLayout() {
 
   const [proveedoresDestacados, setProveedoresDestacados] = useState<any>(null);
 
+  //  ------ Fetch Data --------
   useEffect(() => {
     async function fetchProveedoresDestacados() {
       try {
@@ -171,14 +173,15 @@ export default function DashboardLayout() {
       <header className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card
           title="Total Proveedores"
-          value="247"
+          // @ts-ignore
+          value={loading ? <Spinner /> : data?.total_proveedores || "0"}
           icon={<LuBuilding />}
           footer="+12% desde el mes pasado"
         />
 
         <Card
           title="Órdenes Activas"
-          //@ts-ignore
+          // @ts-ignore
           value={loading ? <Spinner /> : data?.ordenes_activas || "0"}
           icon={<AiOutlineShoppingCart />}
           //@ts-ignore
@@ -209,9 +212,7 @@ export default function DashboardLayout() {
         <Card
           title="Pagos Pendientes"
           //@ts-ignore
-          value={
-            loading ? <Spinner /> : `$${data?.pagos_pendientes || "0.00"}`
-          }
+          value={loading ? <Spinner /> : `$${data?.pagos_pendientes || "0.00"}`}
           icon={<AiOutlineWarning />}
           //@ts-ignore
           footer={

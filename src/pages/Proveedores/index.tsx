@@ -212,7 +212,7 @@ export default function Proveedores() {
                         {p.razon_social}
                       </p>
                       <p className="text-gray-600 text-sm">RUC: {p.ruc}</p>
-                      <p className="text-gray-600 text-sm truncate max-w-xs">
+                      <p className="text-gray-600 text-xs truncate max-w-xs">
                         {p.direccion}
                       </p>
                     </div>

@@ -11,6 +11,7 @@ import Entregas from "../pages/Entregas";
 import DashboardLayoutRouter from "../layouts/DashboardLayoutRouter";
 import Order from "../pages/order";
 import Facturacion from "../pages/facturacion";
+import Evaluacion from "../pages/Evaluacion";
 
 const AppRouter = () => {
   return (
@@ -25,8 +26,9 @@ const AppRouter = () => {
           <Route index element={<Dashboard />} />
           <Route path="proveedores" element={<Proveedores />} />
           <Route path="order" element={<Order />} />
-          <Route path="facturacion" element={<Facturacion />} />
           <Route path="entregas" element={<Entregas />} />
+          <Route path="facturacion" element={<Facturacion />} />
+          <Route path="evaluacion" element={<Evaluacion />} />
         </Route>
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
