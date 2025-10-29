@@ -33,12 +33,40 @@ export default function DashboardLayout() {
   const [chartData, setChartData] = useState<
     { dia: string; ordenes: number }[]
   >([]);
+  //@ts-ignore
   const [proveedores, setProveedores] = useState<any[]>([]);
+  const [actividadReciente, setActividadReciente] = useState<any>(null);
+  const [loadingActividad, setLoadingActividad] = useState(true);
+
   const Spinner = () => (
-    <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin inline-block" />
+    <div className="flex justify-center">
+      <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
   );
+
   //@ts-ignore
   const [loadingProveedores, setLoadingProveedores] = useState(true);
+
+  const [proveedoresDestacados, setProveedoresDestacados] = useState<any>(null);
+
+  useEffect(() => {
+    async function fetchProveedoresDestacados() {
+      try {
+        const res = await fetch(
+          "https://proveedor-back-a1051c0b9289.herokuapp.com/dashboard/proveedores-destacados"
+        );
+        const json = await res.json();
+        setProveedoresDestacados(json);
+      } catch (err) {
+        console.error(
+          "Error al obtener proveedores destacados:",
+          (err as Error).message
+        );
+      }
+    }
+    fetchProveedoresDestacados();
+  }, []);
+
   useEffect(() => {
     async function fetchProveedores() {
       try {
@@ -74,6 +102,26 @@ export default function DashboardLayout() {
   }, []);
 
   useEffect(() => {
+    async function fetchActividadReciente() {
+      try {
+        const res = await fetch(
+          "https://proveedor-back-a1051c0b9289.herokuapp.com/dashboard/actividad-reciente"
+        );
+        const json = await res.json();
+        setActividadReciente(json);
+      } catch (err) {
+        console.error(
+          "Error al obtener actividad reciente:",
+          (err as Error).message
+        );
+      } finally {
+        setLoadingActividad(false);
+      }
+    }
+    fetchActividadReciente();
+  }, []);
+
+  useEffect(() => {
     const days = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
     const randomData = days.map((dia) => ({
       dia,
@@ -82,11 +130,22 @@ export default function DashboardLayout() {
     setChartData(randomData);
   }, []);
 
-  const SmallSpinner = () => (
-    <div className="flex justify-center">
-      <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-    </div>
-  );
+  // -------- Calcular tiempo relativo --------
+  const timeAgo = (dateString: string) => {
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffMs = now.getTime() - date.getTime();
+
+    const seconds = Math.floor(diffMs / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (seconds < 60) return "Hace unos segundos";
+    if (minutes < 60) return `Hace ${minutes} min${minutes > 1 ? "s" : ""}`;
+    if (hours < 24) return `Hace ${hours} hora${hours > 1 ? "s" : ""}`;
+    return `Hace ${days} día${days > 1 ? "s" : ""}`;
+  };
 
   // -------- Formulario Nuevo Proveedor ----------
   const [form, setForm] = useState({
@@ -119,9 +178,8 @@ export default function DashboardLayout() {
 
         <Card
           title="Órdenes Activas"
-          
           //@ts-ignore
-          value={loading ? <SmallSpinner /> : data?.ordenes_activas || "0"}
+          value={loading ? <Spinner /> : data?.ordenes_activas || "0"}
           icon={<AiOutlineShoppingCart />}
           //@ts-ignore
           footer={
@@ -136,7 +194,7 @@ export default function DashboardLayout() {
         <Card
           title="Entregas Pendientes"
           //@ts-ignore
-          value={loading ? <SmallSpinner /> : data?.entregas_pendientes || "0"}
+          value={loading ? <Spinner /> : data?.entregas_pendientes || "0"}
           icon={<AiOutlineTruck />}
           //@ts-ignore
           footer={
@@ -152,7 +210,7 @@ export default function DashboardLayout() {
           title="Pagos Pendientes"
           //@ts-ignore
           value={
-            loading ? <SmallSpinner /> : `$${data?.pagos_pendientes || "0.00"}`
+            loading ? <Spinner /> : `$${data?.pagos_pendientes || "0.00"}`
           }
           icon={<AiOutlineWarning />}
           //@ts-ignore
@@ -167,101 +225,174 @@ export default function DashboardLayout() {
       </header>
 
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* -------- ACTIVIDAD RECIENTE -------- */}
         <Card
           title="Actividad Reciente"
           subtitle="Últimas notificaciones y actualizaciones"
         >
-          <ul className="space-y-4">
-            <li className="flex items-center gap-2">
-              <AiOutlineCheckCircle className="text-green-500 text-lg" />
-              <div>
-                <p className="text-gray-700">Orden #1234 completada</p>
-                <p className="text-gray-500 text-xs">
-                  Proveedor: Suministros ABC - Hace 2 horas
-                </p>
-              </div>
-            </li>
-            <li className="flex items-center gap-2">
-              <AiOutlineClockCircle className="text-yellow-500 text-lg" />
-              <div>
-                <p className="text-gray-700">Entrega retrasada</p>
-                <p className="text-gray-500 text-xs">
-                  Orden #1235 - Estimado: mañana
-                </p>
-              </div>
-            </li>
-            <li className="flex items-center gap-2">
-              <LuBuilding className="text-blue-500 text-lg" />
-              <div>
-                <p className="text-gray-700">Nuevo proveedor registrado</p>
-                <p className="text-gray-500 text-xs">
-                  Tecnología XYZ - Hace 1 día
-                </p>
-              </div>
-            </li>
-          </ul>
+          {loadingActividad ? (
+            <div className="flex justify-center py-6">
+              <Spinner />
+            </div>
+          ) : (
+            <ul className="space-y-4">
+              {actividadReciente && (
+                <>
+                  <li className="flex items-center gap-2">
+                    <AiOutlineCheckCircle className="text-green-500 text-lg" />
+                    <div>
+                      <p className="text-gray-700 font-medium">
+                        {actividadReciente.ultimaOrdenCompletada?.titulo}
+                      </p>
+                      <p className="text-gray-500 text-xs">
+                        {actividadReciente.ultimaOrdenCompletada?.subtitulo}
+                      </p>
+                      <p className="text-gray-400 text-xs">
+                        {timeAgo(actividadReciente.ultimaOrdenCompletada?.ts)}
+                      </p>
+                    </div>
+                  </li>
+
+                  <li className="flex items-center gap-2">
+                    <AiOutlineClockCircle className="text-yellow-500 text-lg" />
+                    <div>
+                      <p className="text-gray-700 font-medium">
+                        {actividadReciente.ultimaEntregaRetrasada?.titulo}
+                      </p>
+                      <p className="text-gray-500 text-xs">
+                        {actividadReciente.ultimaEntregaRetrasada?.subtitulo}
+                      </p>
+                      <p className="text-gray-400 text-xs">
+                        {timeAgo(actividadReciente.ultimaEntregaRetrasada?.ts)}
+                      </p>
+                    </div>
+                  </li>
+
+                  <li className="flex items-center gap-2">
+                    <LuBuilding className="text-blue-500 text-lg" />
+                    <div>
+                      <p className="text-gray-700 font-medium">
+                        {actividadReciente.ultimoProveedorNuevo?.titulo}
+                      </p>
+                      <p className="text-gray-500 text-xs">
+                        {actividadReciente.ultimoProveedorNuevo?.subtitulo}
+                      </p>
+                      <p className="text-gray-400 text-xs">
+                        {timeAgo(actividadReciente.ultimoProveedorNuevo?.ts)}
+                      </p>
+                    </div>
+                  </li>
+                </>
+              )}
+            </ul>
+          )}
         </Card>
 
+        {/* -------- PROVEEDORES DESTACADOS -------- */}
         <Card
           title="Proveedores Destacados"
           subtitle="Mejor desempeño este mes"
         >
-          <ul className="space-y-4 mt-2">
-            <li className="flex justify-between items-center">
+          {loadingProveedores ? (
+            <div className="flex justify-center py-6">
+              <Spinner />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+              {/* Mejor Desempeño */}
               <div>
-                <p className="font-semibold">
-                  {loading ? (
-                    <Spinner />
-                  ) : (
-                    proveedores[0]?.razon_social ||
-                    "Suministros Industriales SA"
+                <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <AiOutlineCheckCircle className="text-green-500" />
+                  Mejor Desempeño
+                </h4>
+                <ul className="space-y-3">
+                  {proveedoresDestacados?.mejorDesempeno?.map(
+                    (p: any, i: number) => (
+                      <li
+                        key={i}
+                        className="flex justify-between items-center px-3 py-2 rounded-lg"
+                      >
+                        <div>
+                          <p className="font-medium text-gray-800">
+                            {p.razon_social}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {p.ordenes_completadas_mes} órdenes •{" "}
+                            {p.calidad_promedio_mes}% calidad
+                          </p>
+                        </div>
+                        <span className="text-green-700 font-semibold text-xs">
+                          {p.puntualidad_pct_mes}% puntualidad
+                        </span>
+                      </li>
+                    )
                   )}
-                </p>
-                <p className="text-gray-500 text-xs">15 órdenes completadas</p>
+                </ul>
               </div>
-              <div className="bg-green-100 px-2 py-1 rounded-lg">
-                <p className="text-xs text-green-900 font-medium">
-                  98% puntualidad
-                </p>
-              </div>
-            </li>
 
-            <li className="flex justify-between items-center">
+              {/* Mejor Puntualidad */}
               <div>
-                <p className="font-semibold">
-                  {loading ? (
-                    <Spinner />
-                  ) : (
-                    proveedores[1]?.razon_social || "Materiales Premium Ltda"
+                <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <AiOutlineClockCircle className="text-blue-500" />
+                  Mejor Puntualidad
+                </h4>
+                <ul className="space-y-3">
+                  {proveedoresDestacados?.mejorPuntualidad?.map(
+                    (p: any, i: number) => (
+                      <li
+                        key={i}
+                        className="flex justify-between items-center px-3 py-2 rounded-lg"
+                      >
+                        <div>
+                          <p className="font-medium text-gray-800">
+                            {p.razon_social}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {p.ordenes_completadas_mes} órdenes •{" "}
+                            {p.calidad_promedio_mes}% calidad
+                          </p>
+                        </div>
+                        <span className="text-blue-700 font-semibold text-xs">
+                          {p.puntualidad_pct_mes}% puntualidad
+                        </span>
+                      </li>
+                    )
                   )}
-                </p>
-                <p className="text-gray-500 text-xs">8 órdenes completadas</p>
+                </ul>
               </div>
-              <div className="bg-blue-100 px-2 py-1 rounded-lg">
-                <p className="text-xs text-blue-900 font-medium">
-                  100% calidad
-                </p>
-              </div>
-            </li>
 
-            <li className="flex justify-between items-center">
+              {/* Mejor Calidad */}
               <div>
-                <p className="font-semibold">
-                  {loading ? (
-                    <Spinner />
-                  ) : (
-                    proveedores[2]?.razon_social || "Logística Express"
+                <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <AiOutlineTruck className="text-purple-500" />
+                  Mejor Calidad
+                </h4>
+                <ul className="space-y-3">
+                  {proveedoresDestacados?.mejorCalidad?.map(
+                    (p: any, i: number) => (
+                      <li
+                        key={i}
+                        className="flex justify-between items-center px-3 py-2 rounded-lg"
+                      >
+                        <div>
+                          <p className="font-medium text-gray-800">
+                            {p.razon_social}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {p.ordenes_completadas_mes} órdenes •{" "}
+                            {p.puntualidad_pct_mes}% puntualidad
+                          </p>
+                        </div>
+                        <span className="text-purple-700 font-semibold text-xs">
+                          {p.calidad_promedio_mes}% calidad
+                        </span>
+                      </li>
+                    )
                   )}
-                </p>
-                <p className="text-gray-500 text-xs">22 entregas realizadas</p>
+                </ul>
               </div>
-              <div className="bg-purple-100 px-2 py-1 rounded-lg">
-                <p className="text-xs text-purple-900 font-medium">
-                  Mejor precio
-                </p>
-              </div>
-            </li>
-          </ul>
+            </div>
+          )}
         </Card>
       </section>
 
