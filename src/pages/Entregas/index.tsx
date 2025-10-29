@@ -1,10 +1,6 @@
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import {
-  LuTruck,
-  LuPackage,
-  LuEye,
-  LuPencil,
-} from "react-icons/lu";
+import { LuTruck, LuPackage, LuEye, LuPencil } from "react-icons/lu";
 import Card from "../../components/Card";
 import toast, { Toaster } from "react-hot-toast";
 import {
@@ -15,7 +11,11 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  Cell,
 } from "recharts";
+import { Spinner } from "../../components/Spinner";
+import SimpleBar from "simplebar-react";
+import "simplebar/dist/simplebar.min.css";
 
 type Entrega = {
   cliente: string;
@@ -26,51 +26,88 @@ type Entrega = {
   notas: string;
 };
 
+type EntregaBackend = {
+  numero_guia: string;
+  proveedor: string;
+  direccion: string;
+  transportista: string | null;
+  estado: string;
+  fecha: string | null;
+  numero_orden: string;
+};
+
+type ResumenBackend = {
+  entregadas: number;
+  en_transito: number;
+  retrasadas: number;
+  canceladas: number;
+};
+
 export default function SeguimientoEntregas() {
   const { register, handleSubmit } = useForm<Entrega>();
+  const [entregas, setEntregas] = useState<EntregaBackend[] | null>(null);
+  const [resumen, setResumen] = useState<ResumenBackend | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const onSubmit = (data: Entrega) => {
     toast.success("Entrega registrada con éxito 🚚");
     console.log(data);
   };
 
-  const resumenEntregas = [
-    { estado: "Entregadas", cantidad: 12, color: "#22c55e" },
-    { estado: "En tránsito", cantidad: 5, color: "#3b82f6" },
-    { estado: "Retrasadas", cantidad: 2, color: "#eab308" },
-    { estado: "Canceladas", cantidad: 1, color: "#ef4444" },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const resEntregas = await fetch(
+          "https://proveedor-back-a1051c0b9289.herokuapp.com/entrega"
+        );
+        const dataEntregas: EntregaBackend[] = await resEntregas.json();
 
-  const entregasEjemplo = [
-    {
-      id: "ENT-1001",
-      cliente: "Empresa XYZ",
-      direccion: "Av. Siempre Viva 742",
-      fechaEntrega: "2025-09-28",
-      transportista: "Transporte Perú",
-      estado: "Entregado",
-    },
-    {
-      id: "ENT-1002",
-      cliente: "Logística Express",
-      direccion: "Calle Los Laureles 123",
-      fechaEntrega: "2025-09-29",
-      transportista: "Courier Nacional",
-      estado: "En tránsito",
-    },
-    {
-      id: "ENT-1003",
-      cliente: "Materiales Premium",
-      direccion: "Jr. Comercio 456",
-      fechaEntrega: "2025-09-25",
-      transportista: "Transportes Andinos",
-      estado: "Retrasado",
-    },
-  ];
+        const resResumen = await fetch(
+          "https://proveedor-back-a1051c0b9289.herokuapp.com/entrega/resumen"
+        );
+        const dataResumen: ResumenBackend = await resResumen.json();
+
+        setEntregas(dataEntregas);
+        setResumen(dataResumen);
+      } catch (error) {
+        toast.error("Error al cargar los datos del backend");
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const resumenEntregas = resumen
+    ? [
+        {
+          estado: "Entregadas",
+          cantidad: resumen.entregadas,
+          color: "#22c55e",
+        },
+        {
+          estado: "En tránsito",
+          cantidad: resumen.en_transito,
+          color: "#3b82f6",
+        },
+        {
+          estado: "Retrasadas",
+          cantidad: resumen.retrasadas,
+          color: "#eab308",
+        },
+        {
+          estado: "Canceladas",
+          cantidad: resumen.canceladas,
+          color: "#ef4444",
+        },
+      ]
+    : [];
 
   return (
     <section>
-      {/* Header */}
       <div className="top flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
         <div>
           <h2 className="text-3xl font-bold">Seguimiento de Entregas</h2>
@@ -86,10 +123,11 @@ export default function SeguimientoEntregas() {
         </div>
       </div>
 
-      {/* Layout principal */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        {/* Formulario de Entregas */}
-        <Card title="Registrar Entrega" subtitle="Completa los datos de la entrega">
+        <Card
+          title="Registrar Entrega"
+          subtitle="Completa los datos de la entrega"
+        >
           <form
             onSubmit={handleSubmit(onSubmit)}
             className="mt-4 flex flex-col gap-4"
@@ -161,90 +199,103 @@ export default function SeguimientoEntregas() {
           </form>
         </Card>
 
-        {/* Lista de entregas */}
         <Card title="Entregas Registradas" subtitle="Historial y estado actual">
-          <div className="mt-4 grid grid-cols-1 gap-4 max-h-96 overflow-y-auto">
-            {entregasEjemplo.map((entrega, i) => (
-              <div
-                key={i}
-                className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-gray-100/60 p-4 rounded-lg shadow"
-              >
-                <div className="flex-shrink-0 text-gray-400 text-3xl mr-4">
-                  <LuPackage />
-                </div>
-                <div className="flex flex-col flex-grow">
-                  <p className="font-semibold">
-                    {entrega.id} - {entrega.cliente}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {entrega.direccion}
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    Transportista: {entrega.transportista}
-                  </p>
-                </div>
-                <div className="flex flex-col items-start sm:items-end text-sm mt-2 sm:mt-0">
-                  <p
-                    className={`font-medium ${
-                      entrega.estado === "Entregado"
-                        ? "text-green-600"
-                        : entrega.estado === "En tránsito"
-                        ? "text-blue-600"
-                        : entrega.estado === "Retrasado"
-                        ? "text-yellow-600"
-                        : "text-red-600"
-                    }`}
-                  >
-                    {entrega.estado}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    Fecha: {entrega.fechaEntrega}
-                  </p>
-                  <div className="flex gap-2 mt-2">
-                    <button className="p-2 rounded-md bg-blue-100 hover:bg-blue-200">
-                      <LuEye className="text-blue-600" />
-                    </button>
-                    <button className="p-2 rounded-md bg-yellow-100 hover:bg-yellow-200">
-                      <LuPencil className="text-yellow-600" />
-                    </button>
+          <SimpleBar style={{ maxHeight: 384 }} autoHide={false}>
+            {loading ? (
+              <div className="flex justify-center py-10">
+                <Spinner />
+              </div>
+            ) : (
+              entregas?.map((entrega, i) => (
+                <div
+                  key={i}
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-gray-100/60 p-4 rounded-lg shadow"
+                >
+                  <div className="flex-shrink-0 text-gray-400 text-3xl mr-4">
+                    <LuPackage />
+                  </div>
+                  <div className="flex flex-col flex-grow">
+                    <p className="font-semibold">
+                      {entrega.numero_guia} - {entrega.proveedor}
+                    </p>
+                    <p className="text-sm text-gray-500">{entrega.direccion}</p>
+                    <p className="text-xs text-gray-400">
+                      Transportista: {entrega.transportista || "-"}
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-start sm:items-end text-sm mt-2 sm:mt-0">
+                    <p
+                      className={`font-medium ${
+                        entrega.estado === "Entregado"
+                          ? "text-green-600"
+                          : entrega.estado === "En tránsito"
+                          ? "text-blue-600"
+                          : entrega.estado === "Retrasado"
+                          ? "text-yellow-600"
+                          : "text-red-600"
+                      }`}
+                    >
+                      {entrega.estado}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Fecha: {entrega.fecha || "-"}
+                    </p>
+                    <div className="flex gap-2 mt-2">
+                      <button className="p-2 rounded-md bg-blue-100 hover:bg-blue-200">
+                        <LuEye className="text-blue-600" />
+                      </button>
+                      <button className="p-2 rounded-md bg-yellow-100 hover:bg-yellow-200">
+                        <LuPencil className="text-yellow-600" />
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))
+            )}
+          </SimpleBar>
         </Card>
 
-        {/* Resumen */}
         <Card title="Resumen de Entregas" subtitle="Estado general de entregas">
-          <div className="mt-4 flex flex-col gap-3">
-            {resumenEntregas.map((item, idx) => (
-              <div
-                key={idx}
-                className="flex items-center justify-between p-3 rounded-md"
-                style={{ backgroundColor: item.color + "20" }}
-              >
-                <span className="font-medium" style={{ color: item.color }}>
-                  {item.estado}
-                </span>
-                <span className="font-bold" style={{ color: item.color }}>
-                  {item.cantidad}
-                </span>
+          {loading ? (
+            <div className="flex justify-center py-10">
+              <Spinner />
+            </div>
+          ) : (
+            <>
+              <div className="mt-4 flex flex-col gap-3">
+                {resumenEntregas.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between p-3 rounded-md"
+                    style={{ backgroundColor: item.color + "20" }}
+                  >
+                    <span className="font-medium" style={{ color: item.color }}>
+                      {item.estado}
+                    </span>
+                    <span className="font-bold" style={{ color: item.color }}>
+                      {item.cantidad}
+                    </span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
 
-          {/* Gráfico */}
-          <div className="mt-6 w-full h-56">
-            <ResponsiveContainer>
-              <BarChart data={resumenEntregas}>
-                <XAxis dataKey="estado" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="cantidad" fill="#10b981" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+              <div className="mt-6 w-full h-56">
+                <ResponsiveContainer>
+                  <BarChart data={resumenEntregas}>
+                    <XAxis dataKey="estado" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="cantidad" fill="#10b981">
+                      {resumenEntregas.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </>
+          )}
         </Card>
       </div>
     </section>
