@@ -1,11 +1,14 @@
 export type Proveedor = {
   id: number;
-  nombreComercial: string;
+  contacto_principal: string;
   razonSocial: string;
+  calificacion_promedio: number;
+  estado: "activo" | "inactivo";
   ruc: string;
   direccion: string;
   telefono: string;
   email: string;
-  tipoProveedor: "Nacional" | "Internacional";
   descripcion?: string;
+  id_categoria: number;
+  fecha_creacion: string;
 };
