@@ -53,7 +53,9 @@ export default function proveedores() {
   useEffect(() => {
     const fetchProveedores = async () => {
       try {
-        const res = await fetch("http://localhost:3000/proveedor");
+        const res = await fetch(
+          "https://proveedor-back-a1051c0b9289.herokuapp.com/proveedor"
+        );
         const data = await res.json();
 
         console.log(data);
@@ -71,7 +73,7 @@ export default function proveedores() {
     const fetchCategorias = async () => {
       try {
         const res = await fetch(
-          "http://localhost:3000/categoria-proveedor/select"
+          "https://proveedor-back-a1051c0b9289.herokuapp.com/select"
         );
         const data = await res.json();
         setCategorias(data);
