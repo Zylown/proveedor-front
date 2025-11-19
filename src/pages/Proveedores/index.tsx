@@ -28,10 +28,15 @@ const tiempoRelativo = (fecha: string) => {
     Math.floor(diffDias / 30) > 1 ? "es" : ""
   }`;
 };
+export default function proveedores() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<Proveedor>();
 
-export default function Proveedores() {
-  const { register, handleSubmit } = useForm<Proveedor>();
   const [proveedores, setProveedores] = useState<Proveedor[]>([]);
+  const [categorias, setCategorias] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const onSubmit = (data: Proveedor) => {
@@ -52,18 +57,38 @@ export default function Proveedores() {
           "https://proveedor-back-a1051c0b9289.herokuapp.com/proveedor"
         );
         const data = await res.json();
-        setProveedores(data);
+
+        console.log(data);
+
+        // si viene paginado: { items: [...] }
+        const lista = Array.isArray(data) ? data : data.items;
+
+        setProveedores(lista);
       } catch (err) {
         console.error("Error al cargar proveedores:", err);
       } finally {
         setLoading(false);
       }
     };
+    const fetchCategorias = async () => {
+      try {
+        const res = await fetch(
+          "https://proveedor-back-a1051c0b9289.herokuapp.com/select"
+        );
+        const data = await res.json();
+        setCategorias(data);
+      } catch (err) {
+        console.error("Error al cargar categorías:", err);
+      }
+    };
+
     fetchProveedores();
+    fetchCategorias();
   }, []);
 
   return (
     <section>
+      {/*Cabecera */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
         <div>
           <h2 className="text-3xl font-bold">Registro de Proveedores</h2>
@@ -89,98 +114,174 @@ export default function Proveedores() {
             className="mt-4 flex flex-col gap-4"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Campo RUC */}
               <div>
                 <label className="block mb-1 font-medium text-gray-700">
-                  Nombre Comercial
+                  {" "}
+                  RUC
                 </label>
                 <input
                   className="border border-gray-300 rounded-md p-2 w-full"
-                  placeholder="Ej. Suministros ABC"
-                  {...register("nombreComercial")}
+                  placeholder="20123456789"
+                  {...register("ruc", {
+                    required: "El RUC es obligatorio",
+                    pattern: {
+                      value: /^\d{11}$/,
+                      message: "Debe teber exactamente 11 dígitos númericos",
+                    },
+                  })}
                 />
+                {errors.ruc && (
+                  <p className="text-red-500 text-sm">{errors.ruc.message}</p>
+                )}
               </div>
+              {/*Razón Social*/}
               <div>
                 <label className="block mb-1 font-medium text-gray-700">
-                  Razón Social
+                  Razón Social *
                 </label>
                 <input
                   className="border border-gray-300 rounded-md p-2 w-full"
-                  placeholder="Ej. Suministros ABC SAC"
-                  {...register("razonSocial")}
+                  placeholder="ConcreMix Perú SAC"
+                  {...register("razonSocial", {
+                    required: "La Razón Social es obligatoria",
+                    minLength: { value: 2, message: "Mínimo 2 caractares" },
+                    maxLength: { value: 150, message: "Máximo 150 caracteres" },
+                  })}
                 />
+                {errors.razonSocial && (
+                  <p className="text-red-500 text-sm">
+                    {errors.razonSocial.message}
+                  </p>
+                )}
               </div>
-            </div>
-
-            <div>
-              <label className="block mb-1 font-medium text-gray-700">
-                RUC
-              </label>
-              <input
-                className="border border-gray-300 rounded-md p-2 w-full"
-                placeholder="Ej. 12345678901"
-                {...register("ruc")}
-              />
-            </div>
-
-            <div>
-              <label className="block mb-1 font-medium text-gray-700">
-                Dirección
-              </label>
-              <input
-                className="border border-gray-300 rounded-md p-2 w-full"
-                placeholder="Ej. Av. Siempre Viva 123"
-                {...register("direccion")}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/*Dirección*/}
+              <div>
+                <label className="block mb-1 font-medium text-gray-700">
+                  Dirección
+                </label>
+                <input
+                  className="border border-gray-300 rounded-md p-2 w-full"
+                  placeholder="Av. Industrial 123, Lima"
+                  {...register("direccion", {
+                    maxLength: { value: 200, message: "Máximo 200 caracteres" },
+                  })}
+                />
+                {errors.direccion && (
+                  <p className=" text-red-500 text-sm">
+                    {errors.direccion.message}
+                  </p>
+                )}
+              </div>
+              {/*Teléfono*/}
               <div>
                 <label className="block mb-1 font-medium text-gray-700">
                   Teléfono
                 </label>
                 <input
                   className="border border-gray-300 rounded-md p-2 w-full"
-                  placeholder="987654321"
-                  {...register("telefono")}
+                  placeholder="01-444112 o +51 987 654 321"
+                  {...register("telefono", {
+                    maxLength: { value: 20, message: "Máximo 20 caracteres" },
+                  })}
                 />
+                {errors.telefono && (
+                  <p className="text-red-500 text-sm">
+                    {errors.telefono.message}
+                  </p>
+                )}
               </div>
+
+              {/*Email*/}
               <div>
                 <label className="block mb-1 font-medium text-gray-700">
                   Email
                 </label>
                 <input
+                  type="email"
                   className="border border-gray-300 rounded-md p-2 w-full"
                   placeholder="contacto@proveedor.com"
-                  {...register("email")}
+                  {...register("email", {
+                    maxLength: { value: 100, message: "Máximo 100 caracteres" },
+                    pattern: {
+                      value: /^[^\s@]+@[^\s@]+@\.[^\s@]+$/,
+                      message: "Formato de correo ínvalido",
+                    },
+                  })}
+                />
+                {errors.email && (
+                  <p className="text-red-500 text-sm">{errors.email.message}</p>
+                )}
+              </div>
+              {/*Contacto Principal*/}
+              <div>
+                <label className="block mb-1 font-medium text-gray-700">
+                  Contacto Principal
+                </label>
+                <input
+                  className="border border-gray-300 rounded-md p-2 w-full"
+                  placeholder="Juan Pérez"
+                  {...register("contacto_principal", {
+                    maxLength: { value: 100, message: "Máximo 100 caracteres" },
+                  })}
+                />
+                {errors.contacto_principal && (
+                  <p className="text-red-500 text-sm">
+                    {errors.contacto_principal.message}
+                  </p>
+                )}
+              </div>
+              {/*Calificación Promedio*/}
+              <div>
+                <label className="block mb-1 font-medium text-gray-700">
+                  Calificación Promedio (0-5)
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="5"
+                  step="0.1"
+                  className="w-full"
+                  {...register("calificacion_promedio")}
                 />
               </div>
+              {/*Estado*/}
+              <div>
+                <label className="block mb-1 font-medium text-gray-700">
+                  Estado *
+                </label>
+                <select
+                  className="border border-gray-300 rounded-md p-2 w-full"
+                  {...register("estado", { required: "Seleccione un estado" })}
+                  defaultValue="activo"
+                >
+                  <option value="activo">Activo</option>
+                  <option value="inactivo">Inactivo</option>
+                </select>
+                {errors.estado && (
+                  <p className="text-red-500 text-sm">
+                    {errors.estado.message}
+                  </p>
+                )}
+              </div>
+              {/*Categoría*/}
+              <div>
+                <label className="block mb-1 font-medium text-gray-700">
+                  Categoría
+                </label>
+                <select
+                  className="border border-gray-300 rounded-md p-2 w-full"
+                  {...register("id_categoria")}
+                >
+                  <option value="">Seleccione una categoría</option>
+                  {categorias.map((c) => (
+                    <option key={c.id_categoria} value={c.id_categoria}>
+                      {c.nombre}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-
-            <div>
-              <label className="block mb-1 font-medium text-gray-700">
-                Tipo de Proveedor
-              </label>
-              <select
-                className="border border-gray-300 rounded-md p-2 w-full"
-                {...register("tipoProveedor")}
-              >
-                <option value="">Seleccione un tipo</option>
-                <option value="Nacional">Nacional</option>
-                <option value="Internacional">Internacional</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block mb-1 font-medium text-gray-700">
-                Descripción
-              </label>
-              <textarea
-                className="border border-gray-300 rounded-md p-2 w-full"
-                placeholder="Información adicional sobre el proveedor"
-                {...register("descripcion")}
-              />
-            </div>
-
             <button
               type="submit"
               className="bg-blue-500 text-white w-full py-2 rounded-md mt-2 hover:bg-blue-600 transition font-medium"
