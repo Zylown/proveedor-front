@@ -73,7 +73,7 @@ export default function proveedores() {
     const fetchCategorias = async () => {
       try {
         const res = await fetch(
-          "https://proveedor-back-a1051c0b9289.herokuapp.com/select"
+          "https://proveedor-back-a1051c0b9289.herokuapp.com/categoria-proveedor/select"
         );
         const data = await res.json();
         setCategorias(data);
