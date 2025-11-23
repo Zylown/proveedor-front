@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import toast, { Toaster } from "react-hot-toast";
 import Card from "../../components/Card";
@@ -39,6 +39,12 @@ type FormFields = {
   servicio: number;
   comentario?: string;
   evaluador?: string;
+  ruc?: string;
+  telefono?: string;
+  email?: string;
+  direccion?: string;
+  contacto_principal?: string;
+  categoria?: string;
 };
 
 /** ================= Utils ================= */
@@ -257,8 +263,8 @@ function ModalDetalleEvaluacion({
 
 /** ================= Página ================= */
 export default function EvaluacionProveedores() {
-  const { register, handleSubmit, control, watch, reset } = useForm<FormFields>(
-    {
+  const { register, handleSubmit, control, watch, reset, setValue } =
+    useForm<FormFields>({
       defaultValues: {
         proveedor: "",
         fecha: new Date().toISOString().slice(0, 10),
@@ -268,40 +274,52 @@ export default function EvaluacionProveedores() {
         servicio: 0,
         comentario: "",
         evaluador: "",
+        ruc: "",
+        telefono: "",
+        email: "",
+        direccion: "",
+        contacto_principal: "",
+        categoria: "",
       },
-    }
-  );
+    });
 
-  // Mock inicial (cámbialo por fetch a tu backend cuando tengas API)
-  const [items, setItems] = useState<EvaluacionProveedor[]>([
-    {
-      id: "1",
-      proveedor: "Suministros ABC",
-      fecha: "2025-09-25",
-      criterios: { calidad: 5, entrega: 4, precio: 4, servicio: 5 },
-      comentario: "Entrega puntual y empaques correctos.",
-      evaluador: "Laura",
-      puntaje: calcPuntaje({ calidad: 5, entrega: 4, precio: 4, servicio: 5 }),
-    },
-    {
-      id: "2",
-      proveedor: "Logística Express",
-      fecha: "2025-09-22",
-      criterios: { calidad: 4, entrega: 5, precio: 3, servicio: 4 },
-      comentario: "Muy rápidos, podrían mejorar tarifas.",
-      evaluador: "Carlos",
-      puntaje: calcPuntaje({ calidad: 4, entrega: 5, precio: 3, servicio: 4 }),
-    },
-    {
-      id: "3",
-      proveedor: "Materiales Premium",
-      fecha: "2025-09-18",
-      criterios: { calidad: 5, entrega: 3, precio: 3, servicio: 3 },
-      comentario: "Excelente calidad, tiempos irregulares.",
-      evaluador: "Ana",
-      puntaje: calcPuntaje({ calidad: 5, entrega: 3, precio: 3, servicio: 3 }),
-    },
-  ]);
+  const [items, setItems] = useState<EvaluacionProveedor[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch(
+          "https://proveedor-back-a1051c0b9289.herokuapp.com/evaluacion"
+        );
+        const data = await res.json();
+        const mapped = data.map((item: any) => ({
+          id: item.id_evaluacion,
+          proveedor: item.proveedor?.razon_social || "Sin nombre",
+          fecha: item.fecha,
+          criterios: {
+            calidad: item.calidad || 0,
+            entrega: item.puntualidad || 0,
+            precio: Number(item.precio) || 0,
+            servicio: 5,
+          },
+          comentario: item.observaciones || "Sin observaciones",
+          evaluador: "Admin",
+          puntaje: calcPuntaje({
+            calidad: item.calidad || 0,
+            entrega: item.puntualidad || 0,
+            precio: Number(item.precio) || 0,
+            servicio: 5,
+          }),
+        }));
+        setItems(mapped);
+      } catch (err) {
+        toast.error(
+          err instanceof Error ? err.message : "Error al cargar datos"
+        );
+      }
+    };
+    fetchData();
+  }, []);
 
   /** Resumen */
   const total = items.length;
@@ -378,6 +396,26 @@ export default function EvaluacionProveedores() {
     reset({ ...data, proveedor: "", comentario: "", evaluador: "" });
   };
 
+  const [proveedores, setProveedores] = useState<any[]>([]);
+  useEffect(() => {
+    fetch("https://proveedor-back-a1051c0b9289.herokuapp.com/proveedor")
+      .then((r) => r.json())
+      .then((data) => setProveedores(data.items || []));
+  }, []);
+
+  const handleSelectProveedor = (id: string) => {
+    const prov = proveedores.find((p) => p.id_proveedor == id);
+    if (!prov) return;
+
+    setValue("proveedor", prov.razon_social);
+    setValue("ruc", prov.ruc || "");
+    setValue("telefono", prov.telefono || "");
+    setValue("email", prov.email || "");
+    setValue("direccion", prov.direccion || "");
+    setValue("contacto_principal", prov.contacto_principal || "");
+    setValue("categoria", prov.categoria?.nombre || "");
+  };
+
   return (
     <section>
       {/* Encabezado */}
@@ -409,11 +447,73 @@ export default function EvaluacionProveedores() {
           >
             <div>
               <label className="block">Proveedor</label>
-              <input
+              <select
                 className="border border-gray-300 rounded-md p-2 w-full"
-                placeholder="Ej. Suministros ABC"
-                {...register("proveedor", { required: true })}
-              />
+                onChange={(e) => handleSelectProveedor(e.target.value)}
+              >
+                <option value="">Seleccione proveedor...</option>
+                {proveedores.map((p: any) => (
+                  <option key={p.id_proveedor} value={p.id_proveedor}>
+                    {p.razon_social}
+                  </option>
+                ))}
+              </select>
+              <input {...register("proveedor")} hidden />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="mb-1 block font-medium">RUC</label>
+                <input
+                  className="input bg-gray-100"
+                  {...register("ruc")}
+                  readOnly
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block font-medium">Teléfono</label>
+                <input
+                  className="input bg-gray-100"
+                  {...register("telefono")}
+                  readOnly
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block font-medium">Email</label>
+                <input
+                  className="input bg-gray-100"
+                  {...register("email")}
+                  readOnly
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block font-medium">Contacto</label>
+                <input
+                  className="input bg-gray-100"
+                  {...register("contacto_principal")}
+                  readOnly
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="mb-1 block font-medium">Dirección</label>
+                <input
+                  className="input bg-gray-100"
+                  {...register("direccion")}
+                  readOnly
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="mb-1 block font-medium">Categoría</label>
+                <input
+                  className="input bg-gray-100"
+                  {...register("categoria")}
+                  readOnly
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
