@@ -1,4 +1,5 @@
 import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
 import {
   LuCreditCard,
   LuFileText,
@@ -30,15 +31,70 @@ type Factura = {
   metodoPago: string;
   estado: string;
   notas: string;
+  ruc?: string;
+  direccion?: string;
+  telefono?: string;
+  email?: string;
+};
+
+type Proveedor = {
+  id_proveedor: number;
+  ruc: string;
+  razon_social: string;
+  direccion: string;
+  telefono: string;
+  email: string;
 };
 
 export default function Facturacion() {
-  const { register, handleSubmit } = useForm<Factura>();
+  const { register, handleSubmit, setValue } = useForm<Factura>();
+  const [proveedores, setProveedores] = useState<Proveedor[]>([]);
+
+  useEffect(() => {
+    fetch("https://proveedor-back-a1051c0b9289.herokuapp.com/proveedor")
+      .then((res) => res.json())
+      .then((data) => setProveedores(data.items))
+      .catch((err) => console.error("Error cargando proveedores:", err));
+  }, []);
+
+  const onSelectCliente = (id: string) => {
+    const proveedor = proveedores.find((p) => p.id_proveedor === Number(id));
+    if (!proveedor) return;
+    setValue("cliente", proveedor.razon_social);
+    setValue("ruc", proveedor.ruc);
+    setValue("direccion", proveedor.direccion);
+    setValue("telefono", proveedor.telefono);
+    setValue("email", proveedor.email);
+  };
 
   const onSubmit = (data: Factura) => {
     toast.success("Factura/Pago registrado con éxito ✅");
     console.log(data);
   };
+
+  /*const [resumenPagos, setResumenPagos] = useState([
+    { name: "Pagadas", value: 0, color: "#22c55e" },
+    { name: "Pendientes", value: 0, color: "#eab308" },
+    { name: "Vencidas", value: 0, color: "#ef4444" },
+  ]);
+
+  useEffect(() => {
+    fetch("https://proveedor-back-a1051c0b9289.herokuapp.com/dashboard/kpis")
+      .then((res) => res.json())
+      .then((data) => {
+        const pendientes = data.pagos_pendientes
+          ? Number(data.pagos_pendientes)
+          : 0;
+        const vencidas = data.facturas_vencidas ?? 0;
+        const pagadas = Math.max(0, data.ordenes_activas - vencidas); // falta agregar ese response en el backend xd
+        setResumenPagos([
+          { name: "Pagadas", value: pagadas, color: "#22c55e" },
+          { name: "Pendientes", value: pendientes, color: "#eab308" },
+          { name: "Vencidas", value: vencidas, color: "#ef4444" },
+        ]);
+      })
+      .catch(() => console.log("Error cargando KPIs"));
+  }, []);*/
 
   const resumenPagos = [
     { name: "Pagadas", value: 15, color: "#22c55e" },
@@ -82,12 +138,18 @@ export default function Facturacion() {
             className="mt-4 flex flex-col gap-4"
           >
             <div>
-              <label className="block">Cliente</label>
-              <input
+              <label className="block font-semibold">Cliente</label>
+              <select
                 className="border border-gray-300 rounded-md p-2 w-full"
-                placeholder="Ej. Empresa XYZ"
-                {...register("cliente")}
-              />
+                onChange={(e) => onSelectCliente(e.target.value)}
+              >
+                <option value="">Seleccione cliente</option>
+                {proveedores.map((prov) => (
+                  <option key={prov.id_proveedor} value={prov.id_proveedor}>
+                    {prov.razon_social}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block">Número de Factura</label>
@@ -212,7 +274,9 @@ export default function Facturacion() {
                   >
                     {factura.estado}
                   </p>
-                  <p className="text-xs text-gray-500">Fecha: {factura.fecha}</p>
+                  <p className="text-xs text-gray-500">
+                    Fecha: {factura.fecha}
+                  </p>
                   <div className="flex gap-2 mt-2">
                     <button className="p-2 rounded-md bg-blue-100 hover:bg-blue-200">
                       <LuEye className="text-blue-600" />
@@ -255,12 +319,7 @@ export default function Facturacion() {
           <div className="mt-6 w-full h-56">
             <ResponsiveContainer>
               <PieChart>
-                <Pie
-                  data={resumenPagos}
-                  dataKey="value"
-                  outerRadius={80}
-                  label
-                >
+                <Pie data={resumenPagos} dataKey="value" outerRadius={80} label>
                   {resumenPagos.map((entry, index) => (
                     <Cell key={index} fill={entry.color} />
                   ))}
