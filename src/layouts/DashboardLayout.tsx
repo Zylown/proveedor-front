@@ -50,13 +50,16 @@ export default function DashboardLayout() {
 
   const [proveedoresDestacados, setProveedoresDestacados] = useState<any>(null);
 
+  //url desarrollo
+  // const API_URL = "http://localhost:3000";
+  // url produccion
+  const API_URL = "https://proveedor-back-a1051c0b9289.herokuapp.com";
+
   //  ------ Fetch Data --------
   useEffect(() => {
     async function fetchProveedoresDestacados() {
       try {
-        const res = await fetch(
-          "https://proveedor-back-a1051c0b9289.herokuapp.com/dashboard/proveedores-destacados"
-        );
+        const res = await fetch(`${API_URL}/dashboard/proveedores-destacados`);
         const json = await res.json();
         setProveedoresDestacados(json);
       } catch (err) {
@@ -73,7 +76,7 @@ export default function DashboardLayout() {
     async function fetchProveedores() {
       try {
         const res = await fetch(
-          "https://proveedor-back-a1051c0b9289.herokuapp.com/proveedor/listar/con-categoria"
+          `${API_URL}/proveedor/listar/con-categoria/lista-completa`
         );
         const json = await res.json();
         setProveedores(json);
@@ -89,9 +92,7 @@ export default function DashboardLayout() {
   useEffect(() => {
     async function init() {
       try {
-        const res = await fetch(
-          "https://proveedor-back-a1051c0b9289.herokuapp.com/dashboard/kpis"
-        );
+        const res = await fetch(`${API_URL}/dashboard/kpis`);
         const json = await res.json();
         setData(json);
       } catch (err) {
@@ -106,9 +107,7 @@ export default function DashboardLayout() {
   useEffect(() => {
     async function fetchActividadReciente() {
       try {
-        const res = await fetch(
-          "https://proveedor-back-a1051c0b9289.herokuapp.com/dashboard/actividad-reciente"
-        );
+        const res = await fetch(`${API_URL}/dashboard/actividad-reciente`);
         const json = await res.json();
         setActividadReciente(json);
       } catch (err) {
@@ -299,98 +298,127 @@ export default function DashboardLayout() {
               <Spinner />
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
-              {/* Mejor Desempeño */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-4">
+              {/* ======== COLUMNA: MEJOR DESEMPEÑO ======== */}
               <div>
-                <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
                   <AiOutlineCheckCircle className="text-green-500" />
                   Mejor Desempeño
                 </h4>
-                <ul className="space-y-3">
-                  {proveedoresDestacados?.mejorDesempeno?.map(
-                    (p: any, i: number) => (
-                      <li
-                        key={i}
-                        className="flex justify-between items-center px-3 py-2 rounded-lg"
-                      >
-                        <div>
-                          <p className="font-medium text-gray-800">
-                            {p.razon_social}
+
+                {!proveedoresDestacados?.mejorDesempeno?.length ? (
+                  <p className="text-gray-400 text-sm italic">
+                    Sin proveedores destacados.
+                  </p>
+                ) : (
+                  <ul className="space-y-5">
+                    {proveedoresDestacados.mejorDesempeno.map(
+                      (p: any, i: number) => (
+                        <li
+                          key={i}
+                          className="flex justify-between items-start"
+                        >
+                          {/* Info izquierda */}
+                          <div>
+                            <p className="font-semibold text-gray-900 leading-tight">
+                              {p.razon_social}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {p.ordenes_completadas_mes} órdenes •{" "}
+                              {Number(p.calidad_promedio_mes).toFixed(2)}%
+                              calidad
+                            </p>
+                          </div>
+
+                          {/* Valor derecha */}
+                          <p className="text-green-600 font-bold text-sm">
+                            {Number(p.puntualidad_pct_mes).toFixed(2)}%
                           </p>
-                          <p className="text-xs text-gray-500">
-                            {p.ordenes_completadas_mes} órdenes •{" "}
-                            {p.calidad_promedio_mes}% calidad
-                          </p>
-                        </div>
-                        <span className="text-green-700 font-semibold text-xs">
-                          {p.puntualidad_pct_mes}% puntualidad
-                        </span>
-                      </li>
-                    )
-                  )}
-                </ul>
+                        </li>
+                      )
+                    )}
+                  </ul>
+                )}
               </div>
 
-              {/* Mejor Puntualidad */}
+              {/* ======== COLUMNA: MEJOR PUNTUALIDAD ======== */}
               <div>
-                <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
                   <AiOutlineClockCircle className="text-blue-500" />
                   Mejor Puntualidad
                 </h4>
-                <ul className="space-y-3">
-                  {proveedoresDestacados?.mejorPuntualidad?.map(
-                    (p: any, i: number) => (
-                      <li
-                        key={i}
-                        className="flex justify-between items-center px-3 py-2 rounded-lg"
-                      >
-                        <div>
-                          <p className="font-medium text-gray-800">
-                            {p.razon_social}
+
+                {!proveedoresDestacados?.mejorPuntualidad?.length ? (
+                  <p className="text-gray-400 text-sm italic">
+                    Sin proveedores destacados.
+                  </p>
+                ) : (
+                  <ul className="space-y-5">
+                    {proveedoresDestacados.mejorPuntualidad.map(
+                      (p: any, i: number) => (
+                        <li
+                          key={i}
+                          className="flex justify-between items-start"
+                        >
+                          <div>
+                            <p className="font-semibold text-gray-900 leading-tight">
+                              {p.razon_social}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {p.ordenes_completadas_mes} órdenes •{" "}
+                              {Number(p.calidad_promedio_mes).toFixed(2)}%
+                              calidad
+                            </p>
+                          </div>
+
+                          <p className="text-blue-600 font-bold text-sm">
+                            {Number(p.puntualidad_pct_mes).toFixed(2)}%
                           </p>
-                          <p className="text-xs text-gray-500">
-                            {p.ordenes_completadas_mes} órdenes •{" "}
-                            {p.calidad_promedio_mes}% calidad
-                          </p>
-                        </div>
-                        <span className="text-blue-700 font-semibold text-xs">
-                          {p.puntualidad_pct_mes}% puntualidad
-                        </span>
-                      </li>
-                    )
-                  )}
-                </ul>
+                        </li>
+                      )
+                    )}
+                  </ul>
+                )}
               </div>
 
-              {/* Mejor Calidad */}
+              {/* ======== COLUMNA: MEJOR CALIDAD ======== */}
               <div>
-                <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
                   <AiOutlineTruck className="text-purple-500" />
                   Mejor Calidad
                 </h4>
-                <ul className="space-y-3">
-                  {proveedoresDestacados?.mejorCalidad?.map(
-                    (p: any, i: number) => (
-                      <li
-                        key={i}
-                        className="flex justify-between items-center px-3 py-2 rounded-lg"
-                      >
-                        <div>
-                          <p className="font-medium text-gray-800">
-                            {p.razon_social}
+
+                {!proveedoresDestacados?.mejorCalidad?.length ? (
+                  <p className="text-gray-400 text-sm italic">
+                    Sin proveedores destacados.
+                  </p>
+                ) : (
+                  <ul className="space-y-5">
+                    {proveedoresDestacados.mejorCalidad.map(
+                      (p: any, i: number) => (
+                        <li
+                          key={i}
+                          className="flex justify-between items-start"
+                        >
+                          <div>
+                            <p className="font-semibold text-gray-900 leading-tight">
+                              {p.razon_social}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {p.ordenes_completadas_mes} órdenes •{" "}
+                              {Number(p.puntualidad_pct_mes).toFixed(2)}%
+                              puntualidad
+                            </p>
+                          </div>
+
+                          <p className="text-purple-600 font-bold text-sm">
+                            {Number(p.calidad_promedio_mes).toFixed(2)}%
                           </p>
-                          <p className="text-xs text-gray-500">
-                            {p.ordenes_completadas_mes} órdenes •{" "}
-                            {p.puntualidad_pct_mes}% puntualidad
-                          </p>
-                        </div>
-                        <span className="text-purple-700 font-semibold text-xs">
-                          {p.calidad_promedio_mes}% calidad
-                        </span>
-                      </li>
-                    )
-                  )}
-                </ul>
+                        </li>
+                      )
+                    )}
+                  </ul>
+                )}
               </div>
             </div>
           )}
