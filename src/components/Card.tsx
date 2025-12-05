@@ -1,11 +1,11 @@
 interface CardProps {
-  title?: string;
-  subtitle?: string;
-  value?: string | number;
-  footer?: string;
-  icon?: React.ReactNode;
-  children?: React.ReactNode;
-  className?: string;
+  title?: string
+  subtitle?: string
+  value?: string | number
+  footer?: string
+  icon?: React.ReactNode
+  children?: React.ReactNode
+  className?: string
 }
 
 export default function Card({
@@ -15,7 +15,7 @@ export default function Card({
   footer,
   icon,
   children,
-  className = "",
+  className = ''
 }: CardProps) {
   return (
     <div
@@ -39,5 +39,5 @@ export default function Card({
 
       {footer && <div className="mt-4 text-xs text-gray-400">{footer}</div>}
     </div>
-  );
+  )
 }

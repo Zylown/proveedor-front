@@ -1,18 +1,18 @@
-import { useState } from "react";
-import Sidebar from "./Sidebar";
-import { FiSidebar } from "react-icons/fi";
-import { Outlet } from "react-router-dom"; // Outlet sirve para renderizar las rutas hijas (dashboard, proveedores, etc)
+import { useState } from 'react'
+import Sidebar from './Sidebar'
+import { FiSidebar } from 'react-icons/fi'
+import { Outlet } from 'react-router-dom' // Outlet sirve para renderizar las rutas hijas (dashboard, proveedores, etc)
 
 // Layout que envuelve las páginas que tienen sidebar (Dashboard, Proveedores, etc) para que el sidebar y header sean comunes en todas las páginas
 export default function DashboardLayoutRouter() {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(true)
 
   return (
     <main className="flex h-screen">
       {/* Sidebar fijo */}
       <aside
         className={`bg-gray-100 border-r border-gristransparente transition-all duration-300 ${
-          sidebarOpen ? "w-64" : "w-16"
+          sidebarOpen ? 'w-64' : 'w-16'
         }`}
       >
         <Sidebar isOpen={sidebarOpen} />
@@ -37,5 +37,5 @@ export default function DashboardLayoutRouter() {
         </section>
       </div>
     </main>
-  );
+  )
 }

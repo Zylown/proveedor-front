@@ -1,20 +1,20 @@
-import { useForm } from "react-hook-form";
-import { LuLogIn } from "react-icons/lu";
-import toast, { Toaster } from "react-hot-toast";
-import Card from "../../components/Card";
+import { useForm } from 'react-hook-form'
+import { LuLogIn } from 'react-icons/lu'
+import toast, { Toaster } from 'react-hot-toast'
+import Card from '../../components/Card'
 
 type LoginForm = {
-  email: string;
-  password: string;
-};
+  email: string
+  password: string
+}
 
 export default function Login() {
-  const { register, handleSubmit } = useForm<LoginForm>();
+  const { register, handleSubmit } = useForm<LoginForm>()
 
   const onSubmit = (data: LoginForm) => {
-    toast.success("Inicio de sesión exitoso 🚀");
-    console.log("Datos login:", data);
-  };
+    toast.success('Inicio de sesión exitoso 🚀')
+    console.log('Datos login:', data)
+  }
 
   return (
     <section className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
@@ -33,7 +33,7 @@ export default function Login() {
               type="email"
               className="border border-gray-300 rounded-md p-2 w-full"
               placeholder="usuario@ejemplo.com"
-              {...register("email")}
+              {...register('email')}
             />
           </div>
           <div>
@@ -42,7 +42,7 @@ export default function Login() {
               type="password"
               className="border border-gray-300 rounded-md p-2 w-full"
               placeholder="********"
-              {...register("password")}
+              {...register('password')}
             />
           </div>
           <div className="flex justify-between items-center text-sm text-gray-500">
@@ -68,7 +68,7 @@ export default function Login() {
           </div>
         </form>
         <p className="text-sm text-center mt-4 text-gray-500">
-          ¿No tienes cuenta?{" "}
+          ¿No tienes cuenta?{' '}
           <a
             href="/register"
             className="text-blue-500 hover:underline font-medium"
@@ -78,5 +78,5 @@ export default function Login() {
         </p>
       </Card>
     </section>
-  );
+  )
 }

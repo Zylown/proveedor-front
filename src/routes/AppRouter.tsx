@@ -2,16 +2,16 @@ import {
   BrowserRouter as Router,
   Routes,
   Route,
-  Navigate,
-} from "react-router-dom";
-import Dashboard from "../pages/Dashboard";
-import Login from "../pages/Login";
-import Proveedores from "../pages/Proveedores";
-import Entregas from "../pages/Entregas";
-import DashboardLayoutRouter from "../layouts/DashboardLayoutRouter";
-import Order from "../pages/order";
-import Facturacion from "../pages/facturacion";
-import Evaluacion from "../pages/Evaluacion";
+  Navigate
+} from 'react-router-dom'
+import Dashboard from '../pages/Dashboard'
+import Login from '../pages/Login'
+import Proveedores from '../pages/Proveedores'
+import Entregas from '../pages/Entregas'
+import DashboardLayoutRouter from '../layouts/DashboardLayoutRouter'
+import Order from '../pages/order'
+import Facturacion from '../pages/facturacion'
+import Evaluacion from '../pages/Evaluacion'
 
 const AppRouter = () => {
   return (
@@ -33,7 +33,7 @@ const AppRouter = () => {
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
-  );
-};
+  )
+}
 
-export default AppRouter;
+export default AppRouter

@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
-import { useForm, Controller } from "react-hook-form";
-import toast, { Toaster } from "react-hot-toast";
-import Card from "../../components/Card";
+import { useEffect, useMemo, useState } from 'react'
+import { useForm, Controller } from 'react-hook-form'
+import toast, { Toaster } from 'react-hot-toast'
+import Card from '../../components/Card'
 import {
   LuStar,
   LuUsers,
@@ -9,51 +9,51 @@ import {
   LuInfo,
   LuCalendarDays,
   LuClipboardCheck,
-  LuX,
-} from "react-icons/lu";
+  LuX
+} from 'react-icons/lu'
 
 /** ================= Tipos ================= */
 type Criterios = {
-  calidad: number; // 1-5
-  entrega: number; // 1-5
-  precio: number; // 1-5
-  servicio: number; // 1-5
-};
+  calidad: number // 1-5
+  entrega: number // 1-5
+  precio: number // 1-5
+  servicio: number // 1-5
+}
 
 type EvaluacionProveedor = {
-  id: string;
-  proveedor: string;
-  fecha: string; // ISO yyyy-mm-dd
-  criterios: Criterios;
-  comentario?: string;
-  evaluador?: string;
-  puntaje: number; // 0-5 calculado
-};
+  id: string
+  proveedor: string
+  fecha: string // ISO yyyy-mm-dd
+  criterios: Criterios
+  comentario?: string
+  evaluador?: string
+  puntaje: number // 0-5 calculado
+}
 
 type FormFields = {
-  proveedor: string;
-  fecha: string; // yyyy-mm-dd
-  calidad: number;
-  entrega: number;
-  precio: number;
-  servicio: number;
-  comentario?: string;
-  evaluador?: string;
-  ruc?: string;
-  telefono?: string;
-  email?: string;
-  direccion?: string;
-  contacto_principal?: string;
-  categoria?: string;
-};
+  proveedor: string
+  fecha: string // yyyy-mm-dd
+  calidad: number
+  entrega: number
+  precio: number
+  servicio: number
+  comentario?: string
+  evaluador?: string
+  ruc?: string
+  telefono?: string
+  email?: string
+  direccion?: string
+  contacto_principal?: string
+  categoria?: string
+}
 
 /** ================= Utils ================= */
 const PESOS = {
   calidad: 0.4,
   entrega: 0.3,
   precio: 0.2,
-  servicio: 0.1,
-};
+  servicio: 0.1
+}
 
 const calcPuntaje = (c: Criterios) =>
   +(
@@ -61,59 +61,59 @@ const calcPuntaje = (c: Criterios) =>
     c.entrega * PESOS.entrega +
     c.precio * PESOS.precio +
     c.servicio * PESOS.servicio
-  ).toFixed(2);
+  ).toFixed(2)
 
 const scoreToLabel = (puntaje: number) => {
-  if (puntaje >= 4.5) return "Excelente";
-  if (puntaje >= 4.0) return "Muy bueno";
-  if (puntaje >= 3.0) return "Bueno";
-  if (puntaje >= 2.0) return "Deficiente";
-  return "Crítico";
-};
+  if (puntaje >= 4.5) return 'Excelente'
+  if (puntaje >= 4.0) return 'Muy bueno'
+  if (puntaje >= 3.0) return 'Bueno'
+  if (puntaje >= 2.0) return 'Deficiente'
+  return 'Crítico'
+}
 
 const cls = (...xs: (string | false | null | undefined)[]) =>
-  xs.filter(Boolean).join(" ");
+  xs.filter(Boolean).join(' ')
 
 const formatDate = (iso: string) =>
-  new Date(iso + "T00:00:00").toLocaleDateString("es-PE", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
+  new Date(iso + 'T00:00:00').toLocaleDateString('es-PE', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  })
 
 /** ================= Componentes base ================= */
 function BadgePuntaje({ puntaje }: { puntaje: number }) {
-  let tone = "bg-gray-100 text-gray-700";
-  let label = "Regular";
+  let tone = 'bg-gray-100 text-gray-700'
+  let label = 'Regular'
 
   if (puntaje >= 4.5) {
-    tone = "bg-green-100 text-green-700";
-    label = "Excelente";
+    tone = 'bg-green-100 text-green-700'
+    label = 'Excelente'
   } else if (puntaje >= 4) {
-    tone = "bg-emerald-100 text-emerald-700";
-    label = "Muy bueno";
+    tone = 'bg-emerald-100 text-emerald-700'
+    label = 'Muy bueno'
   } else if (puntaje >= 3) {
-    tone = "bg-yellow-100 text-yellow-700";
-    label = "Bueno";
+    tone = 'bg-yellow-100 text-yellow-700'
+    label = 'Bueno'
   } else if (puntaje >= 2) {
-    tone = "bg-orange-100 text-orange-700";
-    label = "Deficiente";
+    tone = 'bg-orange-100 text-orange-700'
+    label = 'Deficiente'
   } else {
-    tone = "bg-red-100 text-red-700";
-    label = "Crítico";
+    tone = 'bg-red-100 text-red-700'
+    label = 'Crítico'
   }
 
   return (
     <span
       className={cls(
-        "inline-flex items-center px-2 py-1 rounded text-xs font-semibold",
+        'inline-flex items-center px-2 py-1 rounded text-xs font-semibold',
         tone
       )}
     >
       <LuClipboardCheck className="mr-1" />
       {label} ({puntaje.toFixed(2)})
     </span>
-  );
+  )
 }
 
 /** Input de estrellas controlado y compacto para no desbordar */
@@ -121,65 +121,65 @@ function StarRating({
   value,
   onChange,
   readOnly = false,
-  size = "md", // "sm" | "md" | "lg"
-  className = "",
+  size = 'md', // "sm" | "md" | "lg"
+  className = ''
 }: {
-  value: number;
-  onChange?: (v: number) => void;
-  readOnly?: boolean;
-  size?: "sm" | "md" | "lg";
-  className?: string;
+  value: number
+  onChange?: (v: number) => void
+  readOnly?: boolean
+  size?: 'sm' | 'md' | 'lg'
+  className?: string
 }) {
   const sizeCls =
-    size === "sm"
-      ? "text-base"
-      : size === "lg"
-      ? "text-3xl"
-      : "text-xl sm:text-2xl";
+    size === 'sm'
+      ? 'text-base'
+      : size === 'lg'
+        ? 'text-3xl'
+        : 'text-xl sm:text-2xl'
 
   return (
     <div
       className={cls(
-        "flex items-center gap-1 leading-none min-w-0 overflow-hidden whitespace-nowrap",
+        'flex items-center gap-1 leading-none min-w-0 overflow-hidden whitespace-nowrap',
         className
       )}
     >
-      {[1, 2, 3, 4, 5].map((n) => {
-        const active = n <= value;
+      {[1, 2, 3, 4, 5].map(n => {
+        const active = n <= value
         return (
           <button
             key={n}
             type="button"
             className={cls(
-              "transition p-0 m-0 shrink-0",
+              'transition p-0 m-0 shrink-0',
               readOnly
-                ? "cursor-default pointer-events-none"
-                : "cursor-pointer",
+                ? 'cursor-default pointer-events-none'
+                : 'cursor-pointer',
               sizeCls,
-              active ? "text-yellow-500" : "text-gray-300 hover:text-yellow-400"
+              active ? 'text-yellow-500' : 'text-gray-300 hover:text-yellow-400'
             )}
             onClick={() => !readOnly && onChange?.(n)}
             aria-label={`Calificar con ${n} estrellas`}
           >
             <LuStar />
           </button>
-        );
+        )
       })}
     </div>
-  );
+  )
 }
 
 /** ================= Modal Detalle ================= */
 function ModalDetalleEvaluacion({
   open,
   onClose,
-  item,
+  item
 }: {
-  open: boolean;
-  onClose: () => void;
-  item: EvaluacionProveedor | null;
+  open: boolean
+  onClose: () => void
+  item: EvaluacionProveedor | null
 }) {
-  if (!open || !item) return null;
+  if (!open || !item) return null
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4">
@@ -258,7 +258,7 @@ function ModalDetalleEvaluacion({
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 /** ================= Página ================= */
@@ -266,113 +266,112 @@ export default function EvaluacionProveedores() {
   const { register, handleSubmit, control, watch, reset, setValue } =
     useForm<FormFields>({
       defaultValues: {
-        proveedor: "",
+        proveedor: '',
         fecha: new Date().toISOString().slice(0, 10),
         calidad: 0,
         entrega: 0,
         precio: 0,
         servicio: 0,
-        comentario: "",
-        evaluador: "",
-        ruc: "",
-        telefono: "",
-        email: "",
-        direccion: "",
-        contacto_principal: "",
-        categoria: "",
-      },
-    });
+        comentario: '',
+        evaluador: '',
+        ruc: '',
+        telefono: '',
+        email: '',
+        direccion: '',
+        contacto_principal: '',
+        categoria: ''
+      }
+    })
 
-  const [items, setItems] = useState<EvaluacionProveedor[]>([]);
+  const [items, setItems] = useState<EvaluacionProveedor[]>([])
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await fetch(
-          "https://proveedor-back-a1051c0b9289.herokuapp.com/evaluacion"
-        );
-        const data = await res.json();
+          'https://proveedor-back-a1051c0b9289.herokuapp.com/evaluacion'
+        )
+        const data = await res.json()
         const mapped = data.map((item: any) => ({
           id: item.id_evaluacion,
-          proveedor: item.proveedor?.razon_social || "Sin nombre",
+          proveedor: item.proveedor?.razon_social || 'Sin nombre',
           fecha: item.fecha,
           criterios: {
             calidad: item.calidad || 0,
             entrega: item.puntualidad || 0,
             precio: Number(item.precio) || 0,
-            servicio: 5,
+            servicio: 5
           },
-          comentario: item.observaciones || "Sin observaciones",
-          evaluador: "Admin",
+          comentario: item.observaciones || 'Sin observaciones',
+          evaluador: 'Admin',
           puntaje: calcPuntaje({
             calidad: item.calidad || 0,
             entrega: item.puntualidad || 0,
             precio: Number(item.precio) || 0,
-            servicio: 5,
-          }),
-        }));
-        setItems(mapped);
+            servicio: 5
+          })
+        }))
+        setItems(mapped)
       } catch (err) {
         toast.error(
-          err instanceof Error ? err.message : "Error al cargar datos"
-        );
+          err instanceof Error ? err.message : 'Error al cargar datos'
+        )
       }
-    };
-    fetchData();
-  }, []);
+    }
+    fetchData()
+  }, [])
 
   /** Resumen */
-  const total = items.length;
+  const total = items.length
   const promedioGeneral = useMemo(() => {
-    if (!total) return 0;
-    return +(items.reduce((acc, it) => acc + it.puntaje, 0) / total).toFixed(2);
-  }, [items, total]);
+    if (!total) return 0
+    return +(items.reduce((acc, it) => acc + it.puntaje, 0) / total).toFixed(2)
+  }, [items, total])
 
   const topProveedor = useMemo(() => {
-    if (!items.length) return null;
-    return [...items].sort((a, b) => b.puntaje - a.puntaje)[0];
-  }, [items]);
+    if (!items.length) return null
+    return [...items].sort((a, b) => b.puntaje - a.puntaje)[0]
+  }, [items])
 
   const criteriosPromedio = useMemo(() => {
-    if (!items.length)
-      return { calidad: 0, entrega: 0, precio: 0, servicio: 0 };
+    if (!items.length) return { calidad: 0, entrega: 0, precio: 0, servicio: 0 }
     const sum = items.reduce(
       (acc, it) => {
-        acc.calidad += it.criterios.calidad;
-        acc.entrega += it.criterios.entrega;
-        acc.precio += it.criterios.precio;
-        acc.servicio += it.criterios.servicio;
-        return acc;
+        acc.calidad += it.criterios.calidad
+        acc.entrega += it.criterios.entrega
+        acc.precio += it.criterios.precio
+        acc.servicio += it.criterios.servicio
+        return acc
       },
       { calidad: 0, entrega: 0, precio: 0, servicio: 0 }
-    );
+    )
     return {
       calidad: +(sum.calidad / items.length).toFixed(2),
       entrega: +(sum.entrega / items.length).toFixed(2),
       precio: +(sum.precio / items.length).toFixed(2),
-      servicio: +(sum.servicio / items.length).toFixed(2),
-    };
-  }, [items]);
+      servicio: +(sum.servicio / items.length).toFixed(2)
+    }
+  }, [items])
 
   /** Vista previa de puntaje mientras llenas el form */
   const liveScore = calcPuntaje({
-    calidad: watch("calidad"),
-    entrega: watch("entrega"),
-    precio: watch("precio"),
-    servicio: watch("servicio"),
-  });
+    calidad: watch('calidad'),
+    entrega: watch('entrega'),
+    precio: watch('precio'),
+    servicio: watch('servicio')
+  })
 
   /** Modal state */
-  const [openDetalle, setOpenDetalle] = useState(false);
-  const [selItem, setSelItem] = useState<EvaluacionProveedor | null>(null);
+  const [openDetalle, setOpenDetalle] = useState(false)
+  const [selItem, setSelItem] = useState<EvaluacionProveedor | null>(null)
   const abrirDetalle = (it: EvaluacionProveedor) => {
-    setSelItem(it);
-    setOpenDetalle(true);
-  };
+    setSelItem(it)
+    setOpenDetalle(true)
+  }
   const cerrarDetalle = () => {
-    setOpenDetalle(false);
-    setSelItem(null);
-  };
+    setOpenDetalle(false)
+    setSelItem(null)
+  }
 
   /** Submit */
   const onSubmit = (data: FormFields) => {
@@ -380,8 +379,8 @@ export default function EvaluacionProveedores() {
       calidad: data.calidad,
       entrega: data.entrega,
       precio: data.precio,
-      servicio: data.servicio,
-    };
+      servicio: data.servicio
+    }
     const nuevo: EvaluacionProveedor = {
       id: crypto.randomUUID(),
       proveedor: data.proveedor.trim(),
@@ -389,32 +388,32 @@ export default function EvaluacionProveedores() {
       criterios,
       comentario: data.comentario?.trim(),
       evaluador: data.evaluador?.trim(),
-      puntaje: calcPuntaje(criterios),
-    };
-    setItems((prev) => [nuevo, ...prev]);
-    toast.success("Evaluación registrada con éxito");
-    reset({ ...data, proveedor: "", comentario: "", evaluador: "" });
-  };
+      puntaje: calcPuntaje(criterios)
+    }
+    setItems(prev => [nuevo, ...prev])
+    toast.success('Evaluación registrada con éxito')
+    reset({ ...data, proveedor: '', comentario: '', evaluador: '' })
+  }
 
-  const [proveedores, setProveedores] = useState<any[]>([]);
+  const [proveedores, setProveedores] = useState<any[]>([])
   useEffect(() => {
-    fetch("https://proveedor-back-a1051c0b9289.herokuapp.com/proveedor")
-      .then((r) => r.json())
-      .then((data) => setProveedores(data.items || []));
-  }, []);
+    fetch('https://proveedor-back-a1051c0b9289.herokuapp.com/proveedor')
+      .then(r => r.json())
+      .then(data => setProveedores(data.items || []))
+  }, [])
 
   const handleSelectProveedor = (id: string) => {
-    const prov = proveedores.find((p) => p.id_proveedor == id);
-    if (!prov) return;
+    const prov = proveedores.find(p => p.id_proveedor == id)
+    if (!prov) return
 
-    setValue("proveedor", prov.razon_social);
-    setValue("ruc", prov.ruc || "");
-    setValue("telefono", prov.telefono || "");
-    setValue("email", prov.email || "");
-    setValue("direccion", prov.direccion || "");
-    setValue("contacto_principal", prov.contacto_principal || "");
-    setValue("categoria", prov.categoria?.nombre || "");
-  };
+    setValue('proveedor', prov.razon_social)
+    setValue('ruc', prov.ruc || '')
+    setValue('telefono', prov.telefono || '')
+    setValue('email', prov.email || '')
+    setValue('direccion', prov.direccion || '')
+    setValue('contacto_principal', prov.contacto_principal || '')
+    setValue('categoria', prov.categoria?.nombre || '')
+  }
 
   return (
     <section>
@@ -449,7 +448,7 @@ export default function EvaluacionProveedores() {
               <label className="block">Proveedor</label>
               <select
                 className="border border-gray-300 rounded-md p-2 w-full"
-                onChange={(e) => handleSelectProveedor(e.target.value)}
+                onChange={e => handleSelectProveedor(e.target.value)}
               >
                 <option value="">Seleccione proveedor...</option>
                 {proveedores.map((p: any) => (
@@ -458,14 +457,14 @@ export default function EvaluacionProveedores() {
                   </option>
                 ))}
               </select>
-              <input {...register("proveedor")} hidden />
+              <input {...register('proveedor')} hidden />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="mb-1 block font-medium">RUC</label>
                 <input
                   className="input bg-gray-100"
-                  {...register("ruc")}
+                  {...register('ruc')}
                   readOnly
                 />
               </div>
@@ -474,7 +473,7 @@ export default function EvaluacionProveedores() {
                 <label className="mb-1 block font-medium">Teléfono</label>
                 <input
                   className="input bg-gray-100"
-                  {...register("telefono")}
+                  {...register('telefono')}
                   readOnly
                 />
               </div>
@@ -483,7 +482,7 @@ export default function EvaluacionProveedores() {
                 <label className="mb-1 block font-medium">Email</label>
                 <input
                   className="input bg-gray-100"
-                  {...register("email")}
+                  {...register('email')}
                   readOnly
                 />
               </div>
@@ -492,7 +491,7 @@ export default function EvaluacionProveedores() {
                 <label className="mb-1 block font-medium">Contacto</label>
                 <input
                   className="input bg-gray-100"
-                  {...register("contacto_principal")}
+                  {...register('contacto_principal')}
                   readOnly
                 />
               </div>
@@ -501,7 +500,7 @@ export default function EvaluacionProveedores() {
                 <label className="mb-1 block font-medium">Dirección</label>
                 <input
                   className="input bg-gray-100"
-                  {...register("direccion")}
+                  {...register('direccion')}
                   readOnly
                 />
               </div>
@@ -510,7 +509,7 @@ export default function EvaluacionProveedores() {
                 <label className="mb-1 block font-medium">Categoría</label>
                 <input
                   className="input bg-gray-100"
-                  {...register("categoria")}
+                  {...register('categoria')}
                   readOnly
                 />
               </div>
@@ -522,7 +521,7 @@ export default function EvaluacionProveedores() {
                 <input
                   type="date"
                   className="border border-gray-300 rounded-md p-2 w-full"
-                  {...register("fecha", { required: true })}
+                  {...register('fecha', { required: true })}
                 />
               </div>
               <div>
@@ -530,7 +529,7 @@ export default function EvaluacionProveedores() {
                 <input
                   className="border border-gray-300 rounded-md p-2 w-full"
                   placeholder="Nombre de quien evalúa"
-                  {...register("evaluador")}
+                  {...register('evaluador')}
                 />
               </div>
             </div>
@@ -629,7 +628,7 @@ export default function EvaluacionProveedores() {
                 className="border border-gray-300 rounded-md p-2 w-full"
                 placeholder="Observaciones adicionales…"
                 rows={3}
-                {...register("comentario")}
+                {...register('comentario')}
               />
             </div>
 
@@ -662,7 +661,7 @@ export default function EvaluacionProveedores() {
         >
           {/* max-h-96 */}
           <div className="mt-4 grid grid-cols-1 gap-4 overflow-y-auto">
-            {items.map((it) => (
+            {items.map(it => (
               <div
                 key={it.id}
                 className="flex flex-col gap-2 bg-gray-100/60 p-4 rounded-lg shadow"
@@ -822,5 +821,5 @@ export default function EvaluacionProveedores() {
         </Card>
       </div>
     </section>
-  );
+  )
 }

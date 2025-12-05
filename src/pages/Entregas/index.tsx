@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { LuPackage, LuEye, LuPencil } from "react-icons/lu";
-import Card from "../../components/Card";
-import toast, { Toaster } from "react-hot-toast";
+import { useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { LuPackage, LuEye, LuPencil } from 'react-icons/lu'
+import Card from '../../components/Card'
+import toast, { Toaster } from 'react-hot-toast'
 import {
   BarChart,
   Bar,
@@ -13,62 +13,56 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  Cell,
-} from "recharts";
-import { Spinner } from "../../components/Spinner";
-import SimpleBar from "simplebar-react";
-import "simplebar/dist/simplebar.min.css";
+  Cell
+} from 'recharts'
+import { Spinner } from '../../components/Spinner'
+import SimpleBar from 'simplebar-react'
+import 'simplebar/dist/simplebar.min.css'
 
-// -------------------------------------------------------
-//  ZOD SCHEMA
-// -------------------------------------------------------
 const entregaSchema = z.object({
-  cliente: z.string().min(1, "El cliente es obligatorio"),
-  direccion: z.string().min(1, "La dirección es obligatoria"),
-  fechaEntrega: z.string().min(1, "La fecha de entrega es obligatoria"),
-  transportista: z.string().min(1, "El transportista es obligatorio"),
-  estado: z.string().min(1, "Debes seleccionar un estado"),
-  notas: z.string().optional(),
-});
+  cliente: z.string().min(1, 'El cliente es obligatorio'),
+  direccion: z.string().min(1, 'La dirección es obligatoria'),
+  fechaEntrega: z.string().min(1, 'La fecha de entrega es obligatoria'),
+  transportista: z.string().min(1, 'El transportista es obligatorio'),
+  estado: z.string().min(1, 'Debes seleccionar un estado'),
+  notas: z.string().optional()
+})
 
-type Entrega = z.infer<typeof entregaSchema>;
+type Entrega = z.infer<typeof entregaSchema>
 
 type EntregaBackend = {
-  numero_guia: string;
-  proveedor: string;
-  direccion: string;
-  transportista: string | null;
-  estado: string;
-  fecha: string | null;
-  numero_orden: string;
-};
+  numero_guia: string
+  proveedor: string
+  direccion: string
+  transportista: string | null
+  estado: string
+  fecha: string | null
+  numero_orden: string
+}
 
 type ResumenBackend = {
-  entregadas: number;
-  en_transito: number;
-  retrasadas: number;
-  canceladas: number;
-};
+  entregadas: number
+  en_transito: number
+  retrasadas: number
+  canceladas: number
+}
 
 export default function SeguimientoEntregas() {
   const {
     register,
     handleSubmit,
     setValue,
-    formState: { errors },
+    formState: { errors }
   } = useForm<Entrega>({
-    resolver: zodResolver(entregaSchema),
-  });
+    resolver: zodResolver(entregaSchema)
+  })
 
-  const [entregas, setEntregas] = useState<EntregaBackend[] | null>(null);
-  const [resumen, setResumen] = useState<ResumenBackend | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [entregas, setEntregas] = useState<EntregaBackend[] | null>(null)
+  const [resumen, setResumen] = useState<ResumenBackend | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  const [proveedores, setProveedores] = useState<any[]>([]);
+  const [proveedores, setProveedores] = useState<any[]>([])
 
-  // -------------------------------------------------------
-  //  ENVIAR FORMULARIO
-  // -------------------------------------------------------
   const onSubmit = async (data: Entrega) => {
     try {
       const payload = {
@@ -77,106 +71,96 @@ export default function SeguimientoEntregas() {
         observaciones: data.notas || null,
         fecha_entrega: data.fechaEntrega,
         estado: data.estado,
-        id_orden: 1,
-      };
+        id_orden: 1
+      }
 
       const res = await fetch(
-        "https://proveedor-back-a1051c0b9289.herokuapp.com/entrega",
+        'https://proveedor-back-a1051c0b9289.herokuapp.com/entrega',
         {
-          method: "POST",
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
-            accept: "*/*",
+            'Content-Type': 'application/json',
+            accept: '*/*'
           },
-          body: JSON.stringify(payload),
+          body: JSON.stringify(payload)
         }
-      );
+      )
 
-      if (!res.ok) throw new Error("Error al registrar");
+      if (!res.ok) throw new Error('Error al registrar')
 
-      toast.success("Entrega registrada correctamente");
+      toast.success('Entrega registrada correctamente')
     } catch (err) {
-      console.error(err);
-      toast.error("Error al registrar la entrega");
+      console.error(err)
+      toast.error('Error al registrar la entrega')
     }
-  };
+  }
 
-  // -------------------------------------------------------
-  //  CARGAR ENTREGAS
-  // -------------------------------------------------------
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true);
+      setLoading(true)
       try {
         const resEntregas = await fetch(
-          "https://proveedor-back-a1051c0b9289.herokuapp.com/entrega"
-        );
-        const dataEntregas: EntregaBackend[] = await resEntregas.json();
+          'https://proveedor-back-a1051c0b9289.herokuapp.com/entrega'
+        )
+        const dataEntregas: EntregaBackend[] = await resEntregas.json()
 
         const resResumen = await fetch(
-          "https://proveedor-back-a1051c0b9289.herokuapp.com/entrega/resumen"
-        );
-        const dataResumen: ResumenBackend = await resResumen.json();
+          'https://proveedor-back-a1051c0b9289.herokuapp.com/entrega/resumen'
+        )
+        const dataResumen: ResumenBackend = await resResumen.json()
 
-        setEntregas(dataEntregas);
-        setResumen(dataResumen);
+        setEntregas(dataEntregas)
+        setResumen(dataResumen)
       } catch (error) {
-        toast.error("Error al cargar datos");
+        toast.error('Error al cargar datos')
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchData();
-  }, []);
+    fetchData()
+  }, [])
 
-  // -------------------------------------------------------
-  //  CARGAR PROVEEDORES
-  // -------------------------------------------------------
   useEffect(() => {
-    fetch("https://proveedor-back-a1051c0b9289.herokuapp.com/proveedor")
-      .then((r) => r.json())
-      .then((data) => setProveedores(data.items || []));
-  }, []);
+    fetch('https://proveedor-back-a1051c0b9289.herokuapp.com/proveedor')
+      .then(r => r.json())
+      .then(data => setProveedores(data.items || []))
+  }, [])
 
-  // Autocompletar datos al seleccionar proveedor
   const handleSelectProveedor = (id: string) => {
-    const prov = proveedores.find((p) => p.id_proveedor == id);
-    if (!prov) return;
+    const prov = proveedores.find(p => p.id_proveedor == id)
+    if (!prov) return
 
-    setValue("cliente", prov.razon_social || "");
-    setValue("direccion", prov.direccion || "");
-    setValue("transportista", prov.contacto_principal || "");
-  };
+    setValue('cliente', prov.razon_social || '')
+    setValue('direccion', prov.direccion || '')
+    setValue('transportista', prov.contacto_principal || '')
+  }
 
   const resumenEntregas = resumen
     ? [
         {
-          estado: "Entregadas",
+          estado: 'Entregadas',
           cantidad: resumen.entregadas,
-          color: "#22c55e",
+          color: '#22c55e'
         },
         {
-          estado: "En tránsito",
+          estado: 'En tránsito',
           cantidad: resumen.en_transito,
-          color: "#3b82f6",
+          color: '#3b82f6'
         },
         {
-          estado: "Retrasadas",
+          estado: 'Retrasadas',
           cantidad: resumen.retrasadas,
-          color: "#eab308",
+          color: '#eab308'
         },
         {
-          estado: "Canceladas",
+          estado: 'Canceladas',
           cantidad: resumen.canceladas,
-          color: "#ef4444",
-        },
+          color: '#ef4444'
+        }
       ]
-    : [];
+    : []
 
-  // -------------------------------------------------------
-  //  UI
-  // -------------------------------------------------------
   return (
     <section>
       <div className="top flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
@@ -203,10 +187,10 @@ export default function SeguimientoEntregas() {
               <label className="block font-medium">Proveedor</label>
               <select
                 className="border border-gray-300 rounded-md p-2 w-full"
-                onChange={(e) => handleSelectProveedor(e.target.value)}
+                onChange={e => handleSelectProveedor(e.target.value)}
               >
                 <option value="">Seleccione proveedor...</option>
-                {proveedores.map((p) => (
+                {proveedores.map(p => (
                   <option key={p.id_proveedor} value={p.id_proveedor}>
                     {p.razon_social}
                   </option>
@@ -219,7 +203,7 @@ export default function SeguimientoEntregas() {
               <label className="block">Cliente</label>
               <input
                 className="border border-gray-300 rounded-md p-2 w-full"
-                {...register("cliente")}
+                {...register('cliente')}
               />
               {errors.cliente && (
                 <p className="text-red-500 text-sm">{errors.cliente.message}</p>
@@ -231,7 +215,7 @@ export default function SeguimientoEntregas() {
               <label className="block">Dirección</label>
               <input
                 className="border border-gray-300 rounded-md p-2 w-full"
-                {...register("direccion")}
+                {...register('direccion')}
               />
               {errors.direccion && (
                 <p className="text-red-500 text-sm">
@@ -247,7 +231,7 @@ export default function SeguimientoEntregas() {
                 <input
                   type="date"
                   className="border border-gray-300 rounded-md p-2 w-full"
-                  {...register("fechaEntrega")}
+                  {...register('fechaEntrega')}
                 />
                 {errors.fechaEntrega && (
                   <p className="text-red-500 text-sm">
@@ -260,7 +244,7 @@ export default function SeguimientoEntregas() {
                 <label className="block">Transportista</label>
                 <input
                   className="border border-gray-300 rounded-md p-2 w-full"
-                  {...register("transportista")}
+                  {...register('transportista')}
                 />
                 {errors.transportista && (
                   <p className="text-red-500 text-sm">
@@ -275,7 +259,7 @@ export default function SeguimientoEntregas() {
               <label className="block">Estado</label>
               <select
                 className="border border-gray-300 rounded-md p-2 w-full"
-                {...register("estado")}
+                {...register('estado')}
               >
                 <option value="">Seleccione estado</option>
                 <option value="pendiente">En tránsito</option>
@@ -294,7 +278,7 @@ export default function SeguimientoEntregas() {
               <label className="block">Notas</label>
               <textarea
                 className="border border-gray-300 rounded-md p-2 w-full"
-                {...register("notas")}
+                {...register('notas')}
               />
             </div>
 
@@ -333,27 +317,27 @@ export default function SeguimientoEntregas() {
                     </p>
                     <p className="text-sm text-gray-500">{entrega.direccion}</p>
                     <p className="text-xs text-gray-400">
-                      Transportista: {entrega.transportista || "-"}
+                      Transportista: {entrega.transportista || '-'}
                     </p>
                   </div>
 
                   <div className="flex flex-col items-start sm:items-end text-sm mt-2 sm:mt-0">
                     <p
                       className={`font-medium ${
-                        entrega.estado === "Entregado"
-                          ? "text-green-600"
-                          : entrega.estado === "En tránsito"
-                          ? "text-blue-600"
-                          : entrega.estado === "Retrasado"
-                          ? "text-yellow-600"
-                          : "text-red-600"
+                        entrega.estado === 'Entregado'
+                          ? 'text-green-600'
+                          : entrega.estado === 'En tránsito'
+                            ? 'text-blue-600'
+                            : entrega.estado === 'Retrasado'
+                              ? 'text-yellow-600'
+                              : 'text-red-600'
                       }`}
                     >
                       {entrega.estado}
                     </p>
 
                     <p className="text-xs text-gray-500">
-                      Fecha: {entrega.fecha || "-"}
+                      Fecha: {entrega.fecha || '-'}
                     </p>
 
                     <div className="flex gap-2 mt-2">
@@ -384,7 +368,7 @@ export default function SeguimientoEntregas() {
                   <div
                     key={idx}
                     className="flex items-center justify-between p-3 rounded-md"
-                    style={{ backgroundColor: item.color + "20" }}
+                    style={{ backgroundColor: item.color + '20' }}
                   >
                     <span className="font-medium" style={{ color: item.color }}>
                       {item.estado}
@@ -416,5 +400,5 @@ export default function SeguimientoEntregas() {
         </Card>
       </div>
     </section>
-  );
+  )
 }

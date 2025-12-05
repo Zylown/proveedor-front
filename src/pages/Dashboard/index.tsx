@@ -1,5 +1,5 @@
 // import { useState } from "react";
-import DashboardLayout from "../../layouts/DashboardLayout";
+import DashboardLayout from '../../layouts/DashboardLayout'
 // import Sidebar from "../../layouts/Sidebar";
 // import { FiSidebar } from "react-icons/fi";
 
@@ -21,7 +21,7 @@ export default function Dashboard() {
       {/* Contenedor derecho (header + contenido con scroll) */}
       {/* <div className="flex flex-col flex-1">
         {/* Header fijo arriba */}
-        {/* <header className="flex items-center border-b border-gristransparente h-14 px-4 ">
+      {/* <header className="flex items-center border-b border-gristransparente h-14 px-4 ">
           <FiSidebar
             className="text-lg cursor-pointer"
             onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -31,11 +31,11 @@ export default function Dashboard() {
           </h1>
         </header> */}
 
-        {/* Contenido con scroll */}
+      {/* Contenido con scroll */}
       {/* </div> */}
-        <section className="flex-1">
-          <DashboardLayout />
-        </section>
+      <section className="flex-1">
+        <DashboardLayout />
+      </section>
     </main>
-  );
+  )
 }
