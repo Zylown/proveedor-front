@@ -18,6 +18,14 @@ import {
 } from "recharts";
 import Card from "../components/Card";
 
+const ToMoney = (num: number | string | undefined) => {
+  const n = Number(num ?? 0);
+  return n.toLocaleString("es-ES", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
+
 export default function DashboardLayout() {
   const [data, setData] = useState<{
     total_proveedores?: number;
@@ -211,7 +219,7 @@ export default function DashboardLayout() {
         <Card
           title="Pagos Pendientes"
           //@ts-ignore
-          value={loading ? <Spinner /> : `$${data?.pagos_pendientes || "0.00"}`}
+          value={loading ? <Spinner /> : `$${ToMoney(data?.pagos_pendientes) || "0.00"}`}
           icon={<AiOutlineWarning />}
           //@ts-ignore
           footer={

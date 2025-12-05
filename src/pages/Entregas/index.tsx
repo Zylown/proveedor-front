@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { LuTruck, LuPackage, LuEye, LuPencil } from "react-icons/lu";
+import { LuPackage, LuEye, LuPencil } from "react-icons/lu";
 import Card from "../../components/Card";
 import toast, { Toaster } from "react-hot-toast";
 import {
@@ -114,12 +114,6 @@ export default function SeguimientoEntregas() {
           <p className="text-grisoscuro">
             Monitorea el estado y progreso de todas las entregas
           </p>
-        </div>
-        <div>
-          <button className="cursor-pointer bg-green-500 text-white px-3 py-2 gap-2 font-medium text-base rounded-md flex items-center hover:bg-green-600 transition">
-            <LuTruck className="text-xl text-white inline mr-2" />
-            Nueva Entrega
-          </button>
         </div>
       </div>
 
