@@ -1,5 +1,9 @@
 import axios from 'axios'
-import type { CreateProveedor, Proveedor } from '../types/Proveedores.types'
+import type {
+  CreateProveedor,
+  Proveedor,
+  UpdateProveedor
+} from '../types/Proveedores.types'
 
 // url desarrollo
 // const API_URL = 'http://localhost:3000'
@@ -33,4 +37,21 @@ export const obtenerCategoriasProveedores = async () => {
 export const obtenerEstadosProveedores = async () => {
   const { data } = await axios.get(`${API_URL}/estado/select`)
   return Array.isArray(data) ? data : data.items
+}
+
+// =====================================================
+// 🔥✨ NUEVO — ACTUALIZAR PROVEEDOR (PATCH /proveedor/:id)
+// =====================================================
+export const actualizarProveedor = async (
+  id: number,
+  data: UpdateProveedor | CreateProveedor
+) => {
+  const res = await axios.patch(`${API_URL}/proveedor/${id}`, data)
+  return res.data
+}
+
+// Eliminar proveedor
+export async function eliminarProveedor(id: number) {
+  const res = await axios.delete(`${API_URL}/proveedor/${id}`)
+  return res.data
 }

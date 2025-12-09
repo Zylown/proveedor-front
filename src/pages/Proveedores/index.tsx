@@ -20,7 +20,9 @@ import {
   crearProveedor,
   obtenerProveedores,
   obtenerCategoriasProveedores,
-  obtenerEstadosProveedores
+  obtenerEstadosProveedores,
+  actualizarProveedor,
+  eliminarProveedor // 🔥 IMPORTANTE
 } from '../../api/proveedor.ts'
 
 const tiempoRelativo = (fecha: string) => {
@@ -36,6 +38,7 @@ const tiempoRelativo = (fecha: string) => {
     return `Hace ${Math.floor(diffDias / 7)} semana${
       Math.floor(diffDias / 7) > 1 ? 's' : ''
     }`
+
   return `Hace ${Math.floor(diffDias / 30)} mes${
     Math.floor(diffDias / 30) > 1 ? 'es' : ''
   }`
@@ -51,16 +54,58 @@ export default function Proveedores() {
   } = useForm({
     resolver: zodResolver(FormAddProveedorSchema)
   })
+  // modal de confirmar eliminación
+  const [modalEliminar, setModalEliminar] = useState(false)
+  const [proveedorAEliminar, setProveedorAEliminar] =
+    useState<Proveedor | null>(null)
+
+  const abrirModalEliminar = (p: Proveedor) => {
+    setProveedorAEliminar(p)
+    setModalEliminar(true)
+  }
+
+  const confirmarEliminar = async () => {
+    if (!proveedorAEliminar) return
+
+    try {
+      await eliminarProveedor(proveedorAEliminar.id_proveedor)
+
+      toast.success('Proveedor eliminado correctamente')
+
+      const lista = await obtenerProveedores()
+      setProveedores(lista)
+
+      // Si estaba editándolo, cerramos edición
+      if (
+        modoEdicion &&
+        proveedorSeleccionado?.id_proveedor === proveedorAEliminar.id_proveedor
+      ) {
+        finalizarEdicion()
+      }
+    } catch (err) {
+      console.error(err)
+      toast.error('Error eliminando proveedor')
+    } finally {
+      setModalEliminar(false)
+      setProveedorAEliminar(null)
+    }
+  }
 
   const [proveedores, setProveedores] = useState<Proveedor[]>([])
-  const [categorias, setCategorias] = useState<CategoriaProveedor[]>([]) // el ([]) significa que inicia como un arreglo vacío
-
+  const [categorias, setCategorias] = useState<CategoriaProveedor[]>([])
   const [estados, setEstados] = useState<
     { id_estado: number; nombre: string }[]
   >([])
 
+  const [modoEdicion, setModoEdicion] = useState(false)
+  const [proveedorSeleccionado, setProveedorSeleccionado] =
+    useState<Proveedor | null>(null)
+
   const [loading, setLoading] = useState(true)
 
+  // ===========================================================
+  // SUBMIT
+  // ===========================================================
   const onSubmit = async (data: CreateProveedor) => {
     try {
       const payload = {
@@ -75,39 +120,78 @@ export default function Proveedores() {
         id_estado: Number(data.id_estado)
       }
 
-      // log para ver el payload antes de enviarlo
-      console.log(payload)
-      await crearProveedor(payload)
-
-      toast.success('Proveedor registrado con éxito')
+      if (!modoEdicion) {
+        await crearProveedor(payload)
+        toast.success('Proveedor registrado con éxito')
+        reset()
+      } else {
+        if (proveedorSeleccionado) {
+          await actualizarProveedor(proveedorSeleccionado.id_proveedor, payload)
+        }
+        toast.success('Proveedor actualizado')
+      }
 
       const lista = await obtenerProveedores()
       setProveedores(lista)
-
-      reset()
     } catch (err) {
       console.error(err)
-      toast.error((err as Error).message || 'Error al registrar proveedor')
+      toast.error('Error al guardar proveedor')
     }
   }
 
-  const Spinner = () => (
-    <div className="flex justify-center py-6">
-      <div className="w-6 h-6 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-    </div>
-  )
+  // ===========================================================
+  // CARGAR INFO EN FORMULARIO
+  // ===========================================================
+  const iniciarEdicion = (p: Proveedor) => {
+    setModoEdicion(true)
+    setProveedorSeleccionado(p)
 
+    reset({
+      ruc: p.ruc ?? '',
+      razon_social: p.razon_social ?? '',
+      direccion: p.direccion ?? '',
+      telefono: p.telefono ?? '',
+      email: p.email ?? '',
+      contacto_principal: p.contacto_principal ?? '',
+      calificacion_promedio: p.calificacion_promedio?.toString() ?? '0',
+      id_categoria: p.categoria?.id_categoria?.toString() ?? '',
+      id_estado: p.estado?.id_estado?.toString() ?? ''
+    })
+  }
+
+  // ===========================================================
+  // FINALIZAR EDICIÓN
+  // ===========================================================
+  const finalizarEdicion = () => {
+    setModoEdicion(false)
+    setProveedorSeleccionado(null)
+
+    reset({
+      ruc: '',
+      razon_social: '',
+      direccion: '',
+      telefono: '',
+      email: '',
+      contacto_principal: '',
+      calificacion_promedio: '0',
+      id_categoria: '',
+      id_estado: ''
+    })
+  }
+
+  // ===========================================================
+  // CARGA INICIAL
+  // ===========================================================
   useEffect(() => {
-    // Simulando la obtención de datos desde una API
     const fetchData = async () => {
       setLoading(true)
       try {
         const listaProveedores = await obtenerProveedores()
-        setProveedores(listaProveedores)
-        // Datos simulados para categorías y estados
         const categoriasData = await obtenerCategoriasProveedores()
-        setCategorias(categoriasData)
         const estadosData = await obtenerEstadosProveedores()
+
+        setProveedores(listaProveedores)
+        setCategorias(categoriasData)
         setEstados(estadosData)
       } catch (error) {
         console.error('Error al obtener proveedores:', error)
@@ -119,9 +203,18 @@ export default function Proveedores() {
     fetchData()
   }, [])
 
+  const Spinner = () => (
+    <div className="flex justify-center py-6">
+      <div className="w-6 h-6 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  )
+
+  // ===========================================================
+  // RENDER
+  // ===========================================================
   return (
     <section>
-      {/*Cabecera */}
+      {/* CABECERA */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
         <div>
           <h2 className="text-3xl font-bold">Registro de Proveedores</h2>
@@ -129,11 +222,16 @@ export default function Proveedores() {
             Gestiona la información de tus proveedores
           </p>
         </div>
-        <div>
-          <button className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer hover:bg-blue-600 transition">
-            <LuBuilding className="text-xl" /> Editar Proveedor
+
+        {modoEdicion && (
+          <button
+            className="flex items-center gap-2 px-4 py-2 rounded-md cursor-pointer transition text-white bg-green-600 hover:bg-green-700"
+            onClick={finalizarEdicion}
+          >
+            <LuBuilding className="text-xl" />
+            Finalizar edición
           </button>
-        </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -147,10 +245,9 @@ export default function Proveedores() {
             className="mt-4 flex flex-col gap-4"
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Campo RUC */}
+              {/* Inputs */}
               <div>
                 <label className="block mb-1 font-medium text-gray-700">
-                  {' '}
                   RUC *
                 </label>
                 <input
@@ -163,7 +260,7 @@ export default function Proveedores() {
                   <p className="text-red-500 text-sm">{errors.ruc.message}</p>
                 )}
               </div>
-              {/*Razón Social*/}
+
               <div>
                 <label className="block mb-1 font-medium text-gray-700">
                   Razón Social *
@@ -179,7 +276,7 @@ export default function Proveedores() {
                   </p>
                 )}
               </div>
-              {/*Dirección*/}
+
               <div>
                 <label className="block mb-1 font-medium text-gray-700">
                   Dirección
@@ -189,13 +286,8 @@ export default function Proveedores() {
                   placeholder="Av. Industrial 123, Lima"
                   {...register('direccion')}
                 />
-                {errors.direccion && (
-                  <p className=" text-red-500 text-sm">
-                    {errors.direccion.message}
-                  </p>
-                )}
               </div>
-              {/*Teléfono*/}
+
               <div>
                 <label className="block mb-1 font-medium text-gray-700">
                   Teléfono
@@ -205,14 +297,8 @@ export default function Proveedores() {
                   placeholder="01-444112 o +51 987 654 321"
                   {...register('telefono')}
                 />
-                {errors.telefono && (
-                  <p className="text-red-500 text-sm">
-                    {errors.telefono.message}
-                  </p>
-                )}
               </div>
 
-              {/*Email*/}
               <div>
                 <label className="block mb-1 font-medium text-gray-700">
                   Email
@@ -223,11 +309,8 @@ export default function Proveedores() {
                   placeholder="contacto@proveedor.com"
                   {...register('email')}
                 />
-                {errors.email && (
-                  <p className="text-red-500 text-sm">{errors.email.message}</p>
-                )}
               </div>
-              {/*Contacto Principal*/}
+
               <div>
                 <label className="block mb-1 font-medium text-gray-700">
                   Contacto Principal
@@ -237,38 +320,29 @@ export default function Proveedores() {
                   placeholder="Juan Pérez"
                   {...register('contacto_principal')}
                 />
-                {errors.contacto_principal && (
-                  <p className="text-red-500 text-sm">
-                    {errors.contacto_principal.message}
-                  </p>
-                )}
               </div>
-              {/*Calificación Promedio*/}
+
               <div>
-                <label className="block mb-3.5 font-medium text-gray-700">
+                <label className="block mb-3 font-medium text-gray-700">
                   Calificación Promedio ({watch('calificacion_promedio') || 0})
                 </label>
-
-                <div className="flex items-center">
-                  <input
-                    type="range"
-                    min="0"
-                    max="5"
-                    step="0.1"
-                    className="w-full"
-                    {...register('calificacion_promedio')}
-                  />
-                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="5"
+                  step="0.1"
+                  className="w-full"
+                  {...register('calificacion_promedio')}
+                />
               </div>
-              {/*Estado*/}
+
               <div>
                 <label className="block mb-1 font-medium text-gray-700">
                   Estado *
                 </label>
                 <select
-                  className="border border-gray-300 rounded-md p-2 w-full"
+                  className="border p-2 rounded-md w-full"
                   {...register('id_estado')}
-                  defaultValue=""
                 >
                   <option value="">Seleccione un estado</option>
                   {estados.map(e => (
@@ -277,20 +351,14 @@ export default function Proveedores() {
                     </option>
                   ))}
                 </select>
-
-                {errors.id_estado && (
-                  <p className="text-red-500 text-sm">
-                    {errors.id_estado.message}
-                  </p>
-                )}
               </div>
-              {/*Categoría*/}
+
               <div>
                 <label className="block mb-1 font-medium text-gray-700">
                   Categoría
                 </label>
                 <select
-                  className="border border-gray-300 rounded-md p-2 w-full"
+                  className="border p-2 rounded-md w-full"
                   {...register('id_categoria')}
                 >
                   <option value="">Seleccione una categoría</option>
@@ -302,83 +370,160 @@ export default function Proveedores() {
                 </select>
               </div>
             </div>
+
             <button
               type="submit"
-              className="bg-blue-500 text-white w-full py-2 rounded-md mt-2 hover:bg-blue-600 transition font-medium"
+              className={`w-full py-2 rounded-md mt-2 font-medium text-white ${
+                modoEdicion
+                  ? 'bg-green-600 hover:bg-green-700'
+                  : 'bg-blue-500 hover:bg-blue-600'
+              }`}
             >
-              Registrar Proveedor
+              {modoEdicion ? 'Guardar Cambios' : 'Registrar Proveedor'}
             </button>
-            <Toaster position="top-right" />
           </form>
+
+          <Toaster position="top-right" />
         </Card>
 
-        {/* PROVEEDORES REGISTRADOS */}
+        {/* LISTA DE PROVEEDORES */}
         <Card
           title="Proveedores Registrados"
-          subtitle="Lista de proveedores activos en el sistema"
+          subtitle="Haz clic en un proveedor para editarlo"
         >
           {loading ? (
             <Spinner />
           ) : (
             <ul className="space-y-4 mt-4 max-h-[32rem] overflow-y-auto">
-              {proveedores.map((p: Proveedor) => (
-                <li
-                  key={p.id_proveedor}
-                  className="relative bg-white rounded-xl shadow-md hover:shadow-lg transition border border-gray-200 p-4 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4"
-                >
-                  <div className="flex items-start gap-3 sm:flex-1">
-                    <LuBuilding className="text-gray-400 text-3xl mt-1" />
-                    <div className="flex flex-col gap-1">
-                      <p className="font-bold text-gray-900 text-lg">
-                        {p.razon_social}
-                      </p>
-                      <p className="text-gray-600 text-sm">RUC: {p.ruc}</p>
-                      <p className="text-gray-600 text-xs truncate max-w-xs">
-                        {p.direccion}
-                      </p>
+              {proveedores.map(p => {
+                const seleccionado =
+                  modoEdicion &&
+                  proveedorSeleccionado?.id_proveedor === p.id_proveedor
+
+                return (
+                  <li
+                    key={p.id_proveedor}
+                    onClick={() => iniciarEdicion(p)}
+                    className={`
+                      relative cursor-pointer rounded-xl shadow-md hover:shadow-lg transition border 
+                      p-4 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4
+                      ${
+                        seleccionado
+                          ? 'border-green-500 bg-green-50/40'
+                          : 'border-gray-200 bg-white'
+                      }
+                    `}
+                  >
+                    {/* BOTÓN ELIMINAR (solo cuando está seleccionado) */}
+                    {seleccionado && (
+                      <button
+                        onClick={e => {
+                          e.stopPropagation() // evita que active editar
+                          abrirModalEliminar(p)
+                        }}
+                        className="absolute top-2 right-2 text-red-600 hover:text-red-800 font-bold"
+                      >
+                        Eliminar
+                      </button>
+                    )}
+
+                    {/* COLUMNA IZQ */}
+                    <div className="flex items-start gap-3">
+                      <LuBuilding className="text-gray-400 text-3xl mt-1" />
+                      <div>
+                        <p className="font-bold text-lg">{p.razon_social}</p>
+                        <p className="text-gray-600 text-sm">RUC: {p.ruc}</p>
+                        <p className="text-gray-600 text-xs">{p.direccion}</p>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="flex flex-col gap-1 sm:text-right sm:min-w-[180px]">
-                    <p className="text-gray-800 flex items-center gap-1">
-                      <AiOutlinePhone className="w-4 h-4 text-gray-500" />{' '}
-                      {p.telefono}
-                    </p>
-                    <p className="text-gray-800 flex items-center gap-1">
-                      <AiOutlineMail className="w-4 h-4 text-gray-500" />{' '}
-                      {p.email}
-                    </p>
-                    <p className="text-gray-800 flex items-center gap-1">
-                      <AiOutlineUser className="w-4 h-4 text-gray-500" />{' '}
-                      {p.contacto_principal}
-                    </p>
-                  </div>
+                    {/* COLUMNA DER */}
+                    <div className="flex flex-col gap-1 sm:text-right">
+                      <p className="flex items-center gap-1">
+                        <AiOutlinePhone className="w-4 h-4 text-gray-500" />{' '}
+                        {p.telefono}
+                      </p>
 
-                  <div className="flex flex-col items-start sm:items-end gap-1 mt-2 sm:mt-0">
-                    <span
-                      className={`px-2 py-1 rounded-md text-sm font-semibold ${
-                        p.estado?.nombre === 'activo'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-red-100 text-red-700'
-                      }`}
-                    >
-                      {p.estado?.nombre?.toUpperCase() || 'SIN ESTADO'}
-                    </span>
-                    <p className="text-gray-400 text-xs">
-                      {tiempoRelativo(p.fecha_creacion || '')}
-                    </p>
+                      <p className="flex items-center gap-1">
+                        <AiOutlineMail className="w-4 h-4 text-gray-500" />{' '}
+                        {p.email}
+                      </p>
 
-                    <div className="flex items-center gap-1 text-yellow-500 font-semibold mt-1">
-                      <AiFillStar className="w-4 h-4" />{' '}
-                      {p.calificacion_promedio || 'N/A'}
+                      <p className="flex items-center gap-1">
+                        <AiOutlineUser className="w-4 h-4 text-gray-500" />{' '}
+                        {p.contacto_principal}
+                      </p>
+
+                      {/* BADGE ESTADO */}
+                      <span
+                        className={`
+                          inline-block mt-1 px-3 py-0.5 rounded-full text-xs font-semibold border
+                          ${
+                            p.estado?.nombre === 'activo'
+                              ? 'bg-green-100 text-green-700 border-green-300'
+                              : 'bg-red-100 text-red-700 border-red-300'
+                          }
+                        `}
+                      >
+                        {p.estado?.nombre?.toUpperCase() || 'SIN ESTADO'}
+                      </span>
+
+                      <p className="text-gray-400 text-xs">
+                        {tiempoRelativo(p.fecha_creacion || '')}
+                      </p>
+
+                      <div className="flex items-center gap-1 text-yellow-500 font-semibold mt-1">
+                        <AiFillStar className="w-4 h-4" />{' '}
+                        {p.calificacion_promedio || 'N/A'}
+                      </div>
                     </div>
-                  </div>
-                </li>
-              ))}
+                  </li>
+                )
+              })}
             </ul>
           )}
         </Card>
       </div>
+      {modalEliminar && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md">
+            <h2 className="text-xl font-bold mb-2 text-red-600">
+              Eliminar Proveedor
+            </h2>
+
+            <p className="text-gray-700 mb-4">
+              ¿Estás seguro de que deseas eliminar al proveedor{' '}
+              <strong>{proveedorAEliminar?.razon_social}</strong>?
+            </p>
+
+            <p className="text-gray-700 mb-4 text-sm">
+              ⚠ Esta acción también eliminará todas sus evaluaciones y registros
+              asociados.
+              <br />
+              Esta acción es <strong>irreversible</strong>.
+            </p>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setModalEliminar(false)
+                  setProveedorAEliminar(null)
+                }}
+                className="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300"
+              >
+                Cancelar
+              </button>
+
+              <button
+                onClick={confirmarEliminar}
+                className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700"
+              >
+                Eliminar definitivamente
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   )
 }

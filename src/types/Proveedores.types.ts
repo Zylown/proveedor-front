@@ -32,6 +32,19 @@ export interface CreateProveedor {
   id_estado: number
 }
 
+//Para editar proveedor
+export interface UpdateProveedor {
+  ruc?: string
+  razon_social?: string
+  direccion?: string | null
+  telefono?: string | null
+  email?: string | null
+  contacto_principal?: string | null
+  calificacion_promedio?: number | null
+  id_categoria?: number | null
+  id_estado?: number | null
+}
+
 export type CategoriaProveedor = {
   id_categoria: number
   nombre: string
