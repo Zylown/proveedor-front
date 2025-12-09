@@ -19,8 +19,21 @@ export interface Proveedor {
   }
 }
 
+// 👇 Nuevo tipo correcto para crear un proveedor
+export interface CreateProveedor {
+  ruc: string
+  razon_social: string
+  direccion?: string | null
+  telefono?: string | null
+  email?: string | null
+  contacto_principal?: string | null
+  calificacion_promedio?: number | null
+  id_categoria?: number | null
+  id_estado: number
+}
+
 export type CategoriaProveedor = {
-  id: number
+  id_categoria: number
   nombre: string
   descripcion?: string
   estado: 'activo' | 'inactivo'

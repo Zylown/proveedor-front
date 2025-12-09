@@ -59,9 +59,9 @@ export default function DashboardLayout() {
   const [proveedoresDestacados, setProveedoresDestacados] = useState<any>(null)
 
   //url desarrollo
-  const API_URL = "http://localhost:3000";
+  // const API_URL = "http://localhost:3000";
   // url produccion
-  // const API_URL = 'https://proveedor-back-a1051c0b9289.herokuapp.com'
+  const API_URL = 'https://proveedor-back-a1051c0b9289.herokuapp.com'
 
   //  ------ Fetch Data --------
   useEffect(() => {

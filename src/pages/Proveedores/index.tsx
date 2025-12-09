@@ -3,6 +3,7 @@ import Card from '../../components/Card'
 import { useForm } from 'react-hook-form'
 import type {
   CategoriaProveedor,
+  CreateProveedor,
   Proveedor
 } from '../../types/Proveedores.types'
 import toast, { Toaster } from 'react-hot-toast'
@@ -15,6 +16,12 @@ import {
 } from 'react-icons/ai'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { FormAddProveedorSchema } from '../../validations/FormAddProveedor.validate'
+import {
+  crearProveedor,
+  obtenerProveedores,
+  obtenerCategoriasProveedores,
+  obtenerEstadosProveedores
+} from '../../api/proveedor.ts'
 
 const tiempoRelativo = (fecha: string) => {
   const ahora = new Date()
@@ -38,6 +45,8 @@ export default function Proveedores() {
   const {
     register,
     handleSubmit,
+    watch,
+    reset,
     formState: { errors }
   } = useForm({
     resolver: zodResolver(FormAddProveedorSchema)
@@ -52,9 +61,34 @@ export default function Proveedores() {
 
   const [loading, setLoading] = useState(true)
 
-  const onSubmit = (data: Proveedor) => {
-    toast.success('Proveedor registrado con éxito')
-    console.log(data)
+  const onSubmit = async (data: CreateProveedor) => {
+    try {
+      const payload = {
+        ruc: data.ruc,
+        razon_social: data.razon_social,
+        direccion: data.direccion || null,
+        telefono: data.telefono || null,
+        email: data.email || null,
+        contacto_principal: data.contacto_principal || null,
+        calificacion_promedio: Number(data.calificacion_promedio) || null,
+        id_categoria: data.id_categoria ? Number(data.id_categoria) : null,
+        id_estado: Number(data.id_estado)
+      }
+
+      // log para ver el payload antes de enviarlo
+      console.log(payload)
+      await crearProveedor(payload)
+
+      toast.success('Proveedor registrado con éxito')
+
+      const lista = await obtenerProveedores()
+      setProveedores(lista)
+
+      reset()
+    } catch (err) {
+      console.error(err)
+      toast.error((err as Error).message || 'Error al registrar proveedor')
+    }
   }
 
   const Spinner = () => (
@@ -63,52 +97,26 @@ export default function Proveedores() {
     </div>
   )
 
-  //url desarrollo
-  // const API_URL = 'http://localhost:3000'
-  // url produccion
-  const API_URL = 'https://proveedor-back-a1051c0b9289.herokuapp.com'
-
   useEffect(() => {
-    const fetchProveedores = async () => {
+    // Simulando la obtención de datos desde una API
+    const fetchData = async () => {
+      setLoading(true)
       try {
-        const res = await fetch(`${API_URL}/proveedor`)
-        const data = await res.json()
-
-        console.log(data)
-
-        // si viene paginado: { items: [...] }
-        const lista = Array.isArray(data) ? data : data.items
-
-        setProveedores(lista)
-      } catch (err) {
-        console.error('Error al cargar proveedores:', err)
+        const listaProveedores = await obtenerProveedores()
+        setProveedores(listaProveedores)
+        // Datos simulados para categorías y estados
+        const categoriasData = await obtenerCategoriasProveedores()
+        setCategorias(categoriasData)
+        const estadosData = await obtenerEstadosProveedores()
+        setEstados(estadosData)
+      } catch (error) {
+        console.error('Error al obtener proveedores:', error)
       } finally {
         setLoading(false)
       }
     }
-    const fetchCategorias = async () => {
-      try {
-        const res = await fetch(`${API_URL}/categoria-proveedor/select`)
-        const data = await res.json()
-        setCategorias(data)
-      } catch (err) {
-        console.error('Error al cargar categorías:', err)
-      }
-    }
 
-    const fetchEstados = async () => {
-      try {
-        const res = await fetch(`${API_URL}/estado/select`)
-        const data = await res.json()
-        setEstados(data)
-      } catch (err) {
-        console.error('Error al cargar estados:', err)
-      }
-    }
-
-    fetchProveedores()
-    fetchCategorias()
-    fetchEstados()
+    fetchData()
   }, [])
 
   return (
@@ -122,8 +130,8 @@ export default function Proveedores() {
           </p>
         </div>
         <div>
-          <button className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition">
-            <LuBuilding className="text-xl" /> Nuevo Proveedor
+          <button className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer hover:bg-blue-600 transition">
+            <LuBuilding className="text-xl" /> Editar Proveedor
           </button>
         </div>
       </div>
@@ -143,19 +151,13 @@ export default function Proveedores() {
               <div>
                 <label className="block mb-1 font-medium text-gray-700">
                   {' '}
-                  RUC
+                  RUC *
                 </label>
                 <input
                   className="border border-gray-300 rounded-md p-2 w-full"
                   placeholder="20123456789"
                   maxLength={11}
-                  {...register('ruc', {
-                    required: 'El RUC es obligatorio',
-                    pattern: {
-                      value: /^\d{11}$/,
-                      message: 'Debe teber exactamente 11 dígitos númericos'
-                    }
-                  })}
+                  {...register('ruc')}
                 />
                 {errors.ruc && (
                   <p className="text-red-500 text-sm">{errors.ruc.message}</p>
@@ -169,15 +171,11 @@ export default function Proveedores() {
                 <input
                   className="border border-gray-300 rounded-md p-2 w-full"
                   placeholder="ConcreMix Perú SAC"
-                  {...register('razonSocial', {
-                    required: 'La Razón Social es obligatoria',
-                    minLength: { value: 2, message: 'Mínimo 2 caractares' },
-                    maxLength: { value: 150, message: 'Máximo 150 caracteres' }
-                  })}
+                  {...register('razon_social')}
                 />
-                {errors.razonSocial && (
+                {errors.razon_social && (
                   <p className="text-red-500 text-sm">
-                    {errors.razonSocial.message}
+                    {errors.razon_social.message}
                   </p>
                 )}
               </div>
@@ -189,9 +187,7 @@ export default function Proveedores() {
                 <input
                   className="border border-gray-300 rounded-md p-2 w-full"
                   placeholder="Av. Industrial 123, Lima"
-                  {...register('direccion', {
-                    maxLength: { value: 200, message: 'Máximo 200 caracteres' }
-                  })}
+                  {...register('direccion')}
                 />
                 {errors.direccion && (
                   <p className=" text-red-500 text-sm">
@@ -207,9 +203,7 @@ export default function Proveedores() {
                 <input
                   className="border border-gray-300 rounded-md p-2 w-full"
                   placeholder="01-444112 o +51 987 654 321"
-                  {...register('telefono', {
-                    maxLength: { value: 20, message: 'Máximo 20 caracteres' }
-                  })}
+                  {...register('telefono')}
                 />
                 {errors.telefono && (
                   <p className="text-red-500 text-sm">
@@ -227,13 +221,7 @@ export default function Proveedores() {
                   type="email"
                   className="border border-gray-300 rounded-md p-2 w-full"
                   placeholder="contacto@proveedor.com"
-                  {...register('email', {
-                    maxLength: { value: 100, message: 'Máximo 100 caracteres' },
-                    pattern: {
-                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                      message: 'Formato de correo ínvalido'
-                    }
-                  })}
+                  {...register('email')}
                 />
                 {errors.email && (
                   <p className="text-red-500 text-sm">{errors.email.message}</p>
@@ -247,9 +235,7 @@ export default function Proveedores() {
                 <input
                   className="border border-gray-300 rounded-md p-2 w-full"
                   placeholder="Juan Pérez"
-                  {...register('contacto_principal', {
-                    maxLength: { value: 100, message: 'Máximo 100 caracteres' }
-                  })}
+                  {...register('contacto_principal')}
                 />
                 {errors.contacto_principal && (
                   <p className="text-red-500 text-sm">
@@ -259,17 +245,20 @@ export default function Proveedores() {
               </div>
               {/*Calificación Promedio*/}
               <div>
-                <label className="block mb-1 font-medium text-gray-700">
-                  Calificación Promedio (0-5)
+                <label className="block mb-3.5 font-medium text-gray-700">
+                  Calificación Promedio ({watch('calificacion_promedio') || 0})
                 </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="5"
-                  step="0.1"
-                  className="w-full"
-                  {...register('calificacion_promedio')}
-                />
+
+                <div className="flex items-center">
+                  <input
+                    type="range"
+                    min="0"
+                    max="5"
+                    step="0.1"
+                    className="w-full"
+                    {...register('calificacion_promedio')}
+                  />
+                </div>
               </div>
               {/*Estado*/}
               <div>
@@ -278,9 +267,7 @@ export default function Proveedores() {
                 </label>
                 <select
                   className="border border-gray-300 rounded-md p-2 w-full"
-                  {...register('id_estado', {
-                    required: 'Seleccione un estado'
-                  })}
+                  {...register('id_estado')}
                   defaultValue=""
                 >
                   <option value="">Seleccione un estado</option>
@@ -334,7 +321,7 @@ export default function Proveedores() {
             <Spinner />
           ) : (
             <ul className="space-y-4 mt-4 max-h-[32rem] overflow-y-auto">
-              {proveedores.map((p: any) => (
+              {proveedores.map((p: Proveedor) => (
                 <li
                   key={p.id_proveedor}
                   className="relative bg-white rounded-xl shadow-md hover:shadow-lg transition border border-gray-200 p-4 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4"
@@ -378,7 +365,7 @@ export default function Proveedores() {
                       {p.estado?.nombre?.toUpperCase() || 'SIN ESTADO'}
                     </span>
                     <p className="text-gray-400 text-xs">
-                      {tiempoRelativo(p.fecha_creacion)}
+                      {tiempoRelativo(p.fecha_creacion || '')}
                     </p>
 
                     <div className="flex items-center gap-1 text-yellow-500 font-semibold mt-1">

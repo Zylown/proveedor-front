@@ -7,7 +7,7 @@ export const FormAddProveedorSchema = z.object({
     .max(11, 'El RUC debe tener 11 dígitos')
     .regex(/^\d+$/, 'El RUC solo debe contener números'),
 
-  razonSocial: z
+  razon_social: z
     .string()
     .min(2, 'La razón social es obligatoria')
     .max(150, 'Máximo 150 caracteres'),
