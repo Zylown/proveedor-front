@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
 import Card from '../../components/Card'
 import { useForm } from 'react-hook-form'
-import type { Proveedor } from '../../types/Proveedores.types'
+import type {
+  CategoriaProveedor,
+  Proveedor
+} from '../../types/Proveedores.types'
 import toast, { Toaster } from 'react-hot-toast'
 import { LuBuilding } from 'react-icons/lu'
 import {
@@ -10,6 +13,8 @@ import {
   AiOutlineUser,
   AiFillStar
 } from 'react-icons/ai'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { FormAddProveedorSchema } from '../../validations/FormAddProveedor.validate'
 
 const tiempoRelativo = (fecha: string) => {
   const ahora = new Date()
@@ -28,15 +33,23 @@ const tiempoRelativo = (fecha: string) => {
     Math.floor(diffDias / 30) > 1 ? 'es' : ''
   }`
 }
-export default function proveedores() {
+
+export default function Proveedores() {
   const {
     register,
     handleSubmit,
     formState: { errors }
-  } = useForm<Proveedor>()
+  } = useForm({
+    resolver: zodResolver(FormAddProveedorSchema)
+  })
 
   const [proveedores, setProveedores] = useState<Proveedor[]>([])
-  const [categorias, setCategorias] = useState<any[]>([])
+  const [categorias, setCategorias] = useState<CategoriaProveedor[]>([]) // el ([]) significa que inicia como un arreglo vacío
+
+  const [estados, setEstados] = useState<
+    { id_estado: number; nombre: string }[]
+  >([])
+
   const [loading, setLoading] = useState(true)
 
   const onSubmit = (data: Proveedor) => {
@@ -50,12 +63,15 @@ export default function proveedores() {
     </div>
   )
 
+  //url desarrollo
+  // const API_URL = 'http://localhost:3000'
+  // url produccion
+  const API_URL = 'https://proveedor-back-a1051c0b9289.herokuapp.com'
+
   useEffect(() => {
     const fetchProveedores = async () => {
       try {
-        const res = await fetch(
-          'https://proveedor-back-a1051c0b9289.herokuapp.com/proveedor'
-        )
+        const res = await fetch(`${API_URL}/proveedor`)
         const data = await res.json()
 
         console.log(data)
@@ -72,9 +88,7 @@ export default function proveedores() {
     }
     const fetchCategorias = async () => {
       try {
-        const res = await fetch(
-          'https://proveedor-back-a1051c0b9289.herokuapp.com/categoria-proveedor/select'
-        )
+        const res = await fetch(`${API_URL}/categoria-proveedor/select`)
         const data = await res.json()
         setCategorias(data)
       } catch (err) {
@@ -82,8 +96,19 @@ export default function proveedores() {
       }
     }
 
+    const fetchEstados = async () => {
+      try {
+        const res = await fetch(`${API_URL}/estado/select`)
+        const data = await res.json()
+        setEstados(data)
+      } catch (err) {
+        console.error('Error al cargar estados:', err)
+      }
+    }
+
     fetchProveedores()
     fetchCategorias()
+    fetchEstados()
   }, [])
 
   return (
@@ -123,6 +148,7 @@ export default function proveedores() {
                 <input
                   className="border border-gray-300 rounded-md p-2 w-full"
                   placeholder="20123456789"
+                  maxLength={11}
                   {...register('ruc', {
                     required: 'El RUC es obligatorio',
                     pattern: {
@@ -204,7 +230,7 @@ export default function proveedores() {
                   {...register('email', {
                     maxLength: { value: 100, message: 'Máximo 100 caracteres' },
                     pattern: {
-                      value: /^[^\s@]+@[^\s@]+@\.[^\s@]+$/,
+                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
                       message: 'Formato de correo ínvalido'
                     }
                   })}
@@ -252,15 +278,22 @@ export default function proveedores() {
                 </label>
                 <select
                   className="border border-gray-300 rounded-md p-2 w-full"
-                  {...register('estado', { required: 'Seleccione un estado' })}
-                  defaultValue="activo"
+                  {...register('id_estado', {
+                    required: 'Seleccione un estado'
+                  })}
+                  defaultValue=""
                 >
-                  <option value="activo">Activo</option>
-                  <option value="inactivo">Inactivo</option>
+                  <option value="">Seleccione un estado</option>
+                  {estados.map(e => (
+                    <option key={e.id_estado} value={e.id_estado}>
+                      {e.nombre}
+                    </option>
+                  ))}
                 </select>
-                {errors.estado && (
+
+                {errors.id_estado && (
                   <p className="text-red-500 text-sm">
-                    {errors.estado.message}
+                    {errors.id_estado.message}
                   </p>
                 )}
               </div>
@@ -337,12 +370,12 @@ export default function proveedores() {
                   <div className="flex flex-col items-start sm:items-end gap-1 mt-2 sm:mt-0">
                     <span
                       className={`px-2 py-1 rounded-md text-sm font-semibold ${
-                        p.estado === 'activo'
+                        p.estado?.nombre === 'activo'
                           ? 'bg-green-100 text-green-700'
                           : 'bg-red-100 text-red-700'
                       }`}
                     >
-                      {p.estado.toUpperCase()}
+                      {p.estado?.nombre?.toUpperCase() || 'SIN ESTADO'}
                     </span>
                     <p className="text-gray-400 text-xs">
                       {tiempoRelativo(p.fecha_creacion)}
